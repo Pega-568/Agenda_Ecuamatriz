@@ -5,7 +5,7 @@ Agenda Ecuamatriz
 ⚠️  No instanciar ni migrar hasta Fase 8.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -35,7 +35,7 @@ class MeetingTranscript(db.Model):
     status = db.Column(db.String(30), nullable=False, default="pending")
     # pending | processing | completed | failed
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     completed_at = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self) -> str:
@@ -72,7 +72,7 @@ class TechnicalSheetDraft(db.Model):
     reviewed_at = db.Column(db.DateTime, nullable=True)
     is_approved = db.Column(db.Boolean, default=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
     def __repr__(self) -> str:
         return f"<TechnicalSheetDraft id={self.id} meeting={self.meeting_id} approved={self.is_approved}>"

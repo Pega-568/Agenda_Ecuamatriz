@@ -8,7 +8,7 @@ FLUJO ÚNICO DE REUNIÓN:
     → aceptación/rechazo → asistencia QR → ficha técnica posterior
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -111,11 +111,11 @@ class Meeting(db.Model):
     )
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     cancelled_at = db.Column(db.DateTime, nullable=True)

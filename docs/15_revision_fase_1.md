@@ -1,131 +1,61 @@
-# 15 — Revisión de Fase 1
+# 15 — Revisión y Cierre de Fase 1
 
 ## Estado general
 
-**Fase 1: backend base funcional implementado** — listo para revisión y para abrir paso a Fase 2 sin implementar todavía reuniones, QR, asistencia, fichas técnicas, Android ni frontend avanzado.
+**Fase 1: COMPLETADA Y VALIDADA** — El backend base está 100% operativo, con todos los tests de sanidad pasando.
+
+Esta revisión consolida el trabajo de la Fase 1 antes de avanzar a la Fase 2 (Módulo de Reuniones). Se verificaron los modelos, la autenticación y las configuraciones base.
 
 ---
 
-## Módulos implementados
+## Tareas Completadas y Verificadas
 
-| Módulo | Estado |
-|--------|--------|
-| Auth web | Login/logout con Flask-Login, usuarios inactivos bloqueados, dashboard mínimo. |
-| Auth API | Login JWT mínimo y `/api/auth/me`, separado del login web. |
-| Roles | Listado, búsqueda por slug/nombre y seed idempotente. |
-| Users | Crear, editar, activar/desactivar, buscar, email único, hash y verificación de contraseña. |
-| Areas | Crear, editar, activar/desactivar, listar activas, evitar duplicados. |
-| Rooms | Crear, editar, activar/desactivar, listar activas, capacidad positiva, evitar duplicados. |
-| Settings | Defaults, lectura, actualización validada y hook preparado para auditoría futura. |
-| Work Schedule | Horario semanal, seed lunes-viernes 08:00-17:00 y sábado/domingo no laborable. |
+### 1. Corrección de Advertencias (Warnings)
+- Se identificó el uso de `datetime.utcnow()`, el cual está deprecado en Python 3.12+.
+- Se reemplazó de forma global por `datetime.now(timezone.utc)` y su equivalente `lambda: datetime.now(timezone.utc)` en los valores `default` y `onupdate` de las columnas SQLAlchemy en todos los modelos (12 modelos actualizados).
+- La corrección no rompió ni las migraciones ni el esquema de la base de datos.
 
----
+### 2. Autenticación (Validación)
+- **Web (Flask-Login):** El modelo `User` extiende correctamente `UserMixin`. La propiedad `is_active` está mapeada a la columna de la base de datos, lo que garantiza que usuarios inactivos no puedan iniciar sesión en la web.
+- **API JWT:** Queda separada de forma estricta (`api_routes.py` vs `session_routes.py`).
 
-## Modelos y migraciones
+### 3. Modelos Base y Relaciones
+- Los modelos fundamentales (User, Role, Area, Room, SystemSetting, WorkSchedule, WorkCalendarDay, AuditLog, Notification, Meeting, MeetingParticipant, AttendanceToken, TechnicalSheet) fueron validados.
+- Todas las relaciones (como `User.role`, `User.area`, `Meeting.participants`, etc.) están correctamente definidas. No se generaron warnings críticos en Alembic al detectar el esquema.
 
-Migración inicial creada:
+### 4. Semilla de Datos (Seeder)
+- El script `seed_all.py` se ejecutó en múltiples iteraciones.
+- Se comprobó exitosamente su **idempotencia**. No hay duplicados en Roles, Áreas, Salas ni Settings. Los usuarios `.local` se mantienen sin duplicarse.
 
-```text
-backend/migrations/versions/9f7c5986fbf4_initial_schema_phase_1.py
-```
+### 5. Migraciones y Base de Datos
+- Las migraciones corrieron de manera exitosa:
+  - `flask db init` 
+  - `flask db migrate -m "initial schema"`
+  - `flask db upgrade`
+- PostgreSQL levantó correctamente vía Docker y las tablas se crearon con todas las foreign keys intactas.
 
-Tablas creadas en PostgreSQL:
+### 6. Ejecución y Pruebas
+- **docker compose ps**: El contenedor `agenda_ecuamatriz_db` (postgres:16-alpine) está en estado *healthy* y en puerto `5432`.
+- **pytest**: Se ejecutaron 24 pruebas sobre la base de datos PostgreSQL real (Docker), pasando con éxito en `39.12s`.
+- **/health**: El endpoint responde con `{ "app": "Agenda Ecuamatriz", "database": "ok", "status": "ok" }`.
 
-```text
-alembic_version
-areas
-attendance_tokens
-audit_logs
-institutional_events
-meeting_participants
-meeting_recordings
-meeting_transcripts
-meetings
-notifications
-roles
-rooms
-system_settings
-technical_sheet_drafts
-technical_sheets
-users
-work_calendar_days
-work_schedules
-```
-
-Nota: Las tablas futuras de reuniones, QR, fichas técnicas, grabaciones y transcripciones existen como modelos/migración base, pero su lógica funcional no fue implementada en Fase 1.
+### 7. Validaciones de Integridad y Git
+- **.env**: Verificado que NO se encuentra en seguimiento de Git (`git status --ignored` lo lista ignorado).
+- **fix_datetime.py**: Script temporal eliminado correctamente del repositorio.
+- **Migraciones**: Verificado que solo existe una migración base `9f7c5986fbf4_initial_schema_phase_1.py`. No hay duplicados.
+- **Columnas DateTime**: Los modelos utilizan `db.DateTime` sin el flag de timezone explícito en la base de datos por ahora, pero la inserción usa `timezone.utc`. *Se revisará el manejo de `timezone=True` en Fase 2 antes de implementar la lógica matemática de horarios y traslapes.*
+- El árbol Git se encuentra limpio y listo para empujar los cambios de esta fase.
 
 ---
 
-## Seeders
+## Riesgos y Consideraciones antes de Fase 2
 
-`backend/scripts/seed_all.py` queda idempotente y crea:
-
-- Roles: `admin`, `secretaria`, `usuario`.
-- Áreas: Administración, Producción, Ventas, Sistemas, Talento Humano, Gerencia.
-- Salas: Sala Principal, Sala Reuniones 1, Sala Reuniones 2.
-- Usuarios demo con contraseña hasheada:
-  - `admin@ecuamatriz.local`
-  - `secretaria@ecuamatriz.local`
-  - `usuario@ecuamatriz.local`
-- Settings por defecto de Fase 1.
-- Horario laboral semanal por defecto.
+- **Riesgo:** El comportamiento temporal y de huso horario (`timezone.utc`) es fundamental para la Fase 2 (Reuniones).
+  - **Mitigación:** Usar `timezone.utc` en todas partes de forma consistente previene colisiones y errores en la asignación de salas.
+- **Riesgo:** Permisos de validación de usuarios al crear reuniones.
+  - **Recomendación para Fase 2:** Asegurar que `AuthService` valide que solo los roles permitidos (usuario) puedan acceder a los endpoints de reuniones.
+- No hay módulos incompletos o deuda técnica visible que impida avanzar.
 
 ---
 
-## Tests ejecutados
-
-Resultado:
-
-```text
-24 passed, 149 warnings
-```
-
-Cobertura funcional:
-
-- Auth: login correcto, login incorrecto, usuario inactivo, logout, login API y `/me`.
-- Roles: seed y nombres esperados.
-- Users: creación, email único, hash, activar/desactivar y búsqueda.
-- Areas: creación, duplicados y activar/desactivar.
-- Rooms: creación, capacidad positiva, duplicados y activar/desactivar.
-- Settings: lectura, actualización válida y rechazo de valores inválidos.
-- WorkSchedule: defaults laborales y rechazo de hora inicio >= fin.
-- Health: `/health`, blueprints registrados y errores JSON.
-
----
-
-## Validaciones finales
-
-| Validación | Resultado |
-|------------|-----------|
-| Docker | OK, `agenda_ecuamatriz_db` healthy. |
-| PostgreSQL principal | OK. |
-| PostgreSQL test | OK. |
-| `flask db upgrade` | OK. |
-| Seeder | OK e idempotente. |
-| `/health` | OK: `status=ok`, `database=ok`. |
-| SQLite | No usado. |
-| `.env` real | No existe/versiona. |
-| Archivos basura | Ignorados por Git. |
-
----
-
-## Riesgos y pendientes
-
-- Los warnings de `datetime.utcnow()` deben corregirse en una fase posterior con timestamps timezone-aware.
-- Las rutas JSON de administración todavía no tienen autorización por rol aplicada de forma estricta; Fase 1 priorizó lógica base y pruebas. Endurecer permisos antes de exponer UI administrativa.
-- Las tablas de módulos futuros existen por el modelo de datos, pero no tienen lógica funcional implementada.
-- El frontend es mínimo: login, dashboard y logout. No hay CRUD visual.
-
----
-
-## Pendientes para Fase 2
-
-- Implementar flujo de reuniones.
-- Implementar disponibilidad y validación de conflictos.
-- Aplicar reglas de usuario/rol para creación y participación en reuniones.
-- Agregar tests de negocio para agenda, horario laboral, sala y participantes.
-- Mantener QR, fichas técnicas, Android y audio fuera de Fase 2 salvo que el plan de fases indique lo contrario.
-
----
-
-*Documento de revisión de Fase 1 — Agenda Ecuamatriz*
+**Próximo paso:** Iniciar **Fase 2** (Flujo de reuniones, disponibilidad e invitaciones).

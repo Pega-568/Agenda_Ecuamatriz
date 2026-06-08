@@ -3,7 +3,7 @@ app/notifications/models.py — Modelo: Notification
 Agenda Ecuamatriz
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -65,7 +65,7 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False, nullable=False, index=True)
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     read_at = db.Column(db.DateTime, nullable=True)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ class Notification(db.Model):
     def mark_as_read(self):
         """Marca la notificación como leída."""
         self.is_read = True
-        self.read_at = datetime.utcnow()
+        self.read_at = datetime.now(timezone.utc)
 
     def __repr__(self) -> str:
         return f"<Notification id={self.id} user={self.user_id} type={self.type} read={self.is_read}>"

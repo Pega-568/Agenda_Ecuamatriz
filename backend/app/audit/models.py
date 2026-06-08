@@ -3,7 +3,7 @@ app/audit/models.py — Modelo: AuditLog
 Agenda Ecuamatriz
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -49,7 +49,7 @@ class AuditLog(db.Model):
 
     # ─── Timestamp ───────────────────────────────────────────────────────────
     created_at = db.Column(
-        db.DateTime, default=datetime.utcnow, nullable=False, index=True
+        db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
