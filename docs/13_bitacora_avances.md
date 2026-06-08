@@ -264,10 +264,26 @@
 - No se copiaron archivos de Stitch.
 - No se implementaron QR, asistencia, fichas técnicas, audio/transcripción, Android ni frontend avanzado.
 
-**Próximo paso — cierre Fase 2**:
-- Revisar diff final.
-- Confirmar higiene Git.
-- Commit y push de `phase-2/meetings-availability`.
+---
+
+### [2026-06-08] — Fase 2 — Revisión y cierre de Módulo de Reuniones
+
+**Qué se hizo**:
+- Validación de que la estructura base del módulo de reuniones implementa satisfactoriamente todas las restricciones de negocio relacionadas a disponibilidad cruzada de agenda, bloqueos y control de acceso.
+- Ejecución completa de pruebas de cobertura.
+
+**Resultados**:
+- Se ejecutaron 37 tests, validando rigurosamente que las agendas son bloqueadas únicamente cuando existen confirmaciones reales, permitiendo el estado pendiente.
+- Las notificaciones locales y auditorías (AuditLog) se disparan correctamente durante el ciclo de vida de la reunión (creación, aceptación, rechazo, cancelación).
+- Se confirmó la integridad del uso de Timezone Aware Datetimes (`db.DateTime(timezone=True)`) con la migración `b231a19c6a0b`.
+- Los flujos de acceso son correctos, impidiendo a los administradores generar reuniones u operar como participantes, y restringiendo a las secretarias únicamente a acceso de lectura general.
+- Se redactó y publicó el acta de revisión formal en `docs/16_revision_fase_2.md`.
+- El entorno se mantiene totalmente limpio sin restos de código desechable o versiones obsoletas.
+
+**Próximo paso — Fase 3**:
+- Generación y asignación de códigos QR únicos (AttendanceToken).
+- Flujo de escaneo, comprobación de validez y marcado de asistencia.
+- Levantamiento de actas o fichas técnicas pos-reunión.
 
 ---
 
