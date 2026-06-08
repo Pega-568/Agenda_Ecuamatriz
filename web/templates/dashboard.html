@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard</h1>
+<p>{{ current_user.full_name }} · {{ current_user.role_slug }}</p>
+<a href="{{ url_for('auth_web.logout') }}">Cerrar sesión</a>
+{% endblock %}

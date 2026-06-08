@@ -18,16 +18,20 @@ Endpoints:
 Fase de implementación: Fase 1 (base), Fase 5 (completo)
 """
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 calendar_bp = Blueprint("calendar", __name__)
 
 
 @calendar_bp.route("/days", methods=["GET"])
 def list_calendar_days():
-    """TODO (Fase 1): Listar días del calendario laboral."""
-    from app.shared.responses import error_response
-    return error_response("Módulo calendar — implementación pendiente (Fase 1).", 501)
+    """Lista horarios laborales por día."""
+    from app.calendar.service import WorkScheduleService
+    from app.shared.responses import success_response
+
+    if not WorkScheduleService.list_schedules():
+        WorkScheduleService.seed_defaults()
+    return success_response(data=[WorkScheduleService.to_dict(s) for s in WorkScheduleService.list_schedules()])
 
 
 @calendar_bp.route("/days", methods=["POST"])
@@ -81,6 +85,40 @@ def delete_institutional_event(event_id):
 
 @calendar_bp.route("/validate", methods=["GET"])
 def validate_date():
-    """TODO (Fase 1): Verificar si una fecha es laborable. Autenticado."""
-    from app.shared.responses import error_response
-    return error_response("Módulo calendar — implementación pendiente (Fase 1).", 501)
+    """Verifica si un weekday es laborable."""
+    from app.calendar.models import WorkSchedule
+    from app.calendar.service import WorkScheduleService
+    from app.shared.responses import error_response, success_response
+
+    weekday = request.args.get("weekday", type=int)
+    if not weekday:
+        return error_response("weekday es obligatorio.", 422, "WEEKDAY_REQUIRED")
+    schedule = WorkSchedule.query.filter_by(weekday=weekday).first()
+    if not schedule:
+        WorkScheduleService.seed_defaults()
+        schedule = WorkSchedule.query.filter_by(weekday=weekday).first()
+    return success_response(data=WorkScheduleService.to_dict(schedule))
+
+
+@calendar_bp.route("/work-schedules", methods=["GET"])
+def list_work_schedules():
+    """Lista horarios laborales."""
+    return list_calendar_days()
+
+
+@calendar_bp.route("/work-schedules/<int:weekday>", methods=["PUT"])
+def update_work_schedule(weekday):
+    """Actualiza horario laboral por día."""
+    from marshmallow import ValidationError
+    from app.calendar.schemas import WorkScheduleSchema
+    from app.calendar.service import WorkScheduleService
+    from app.shared.responses import error_response, success_response, validation_error_response
+
+    try:
+        payload = WorkScheduleSchema().load(request.get_json(silent=True) or {})
+        schedule = WorkScheduleService.update_schedule(weekday, payload)
+        return success_response(data=WorkScheduleService.to_dict(schedule))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except ValueError as exc:
+        return error_response(str(exc), 422, "WORK_SCHEDULE_VALIDATION_ERROR")

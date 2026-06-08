@@ -6,7 +6,7 @@ Agenda Ecuamatriz
     Modelo preparado para integración futura de grabación/transcripción.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -42,8 +42,8 @@ class MeetingRecording(db.Model):
     started_by_user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=True
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    completed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     def __repr__(self) -> str:
         return f"<MeetingRecording id={self.id} meeting={self.meeting_id} status={self.status}>"

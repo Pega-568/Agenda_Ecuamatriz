@@ -1,44 +1,26 @@
-"""
-app/notifications/routes.py — Rutas del módulo Notifications
-Agenda Ecuamatriz
-
-Endpoints:
-    GET  /api/notifications/          — Mis notificaciones (autenticado)
-    PUT  /api/notifications/<id>/read — Marcar notificación como leída
-    PUT  /api/notifications/read-all  — Marcar todas como leídas
-    GET  /api/notifications/unread-count — Contador de no leídas
-
-Fase de implementación: Fase 2 (base web), Fase 7 (FCM Android)
-"""
+"""Rutas de notificaciones internas."""
 
 from flask import Blueprint
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from app.notifications.service import NotificationService
+from app.shared.responses import error_response, success_response
 
 notifications_bp = Blueprint("notifications", __name__)
 
 
 @notifications_bp.route("/", methods=["GET"])
+@jwt_required()
 def list_notifications():
-    """TODO (Fase 2): Listar notificaciones del usuario autenticado."""
-    from app.shared.responses import error_response
-    return error_response("Módulo notifications — implementación pendiente (Fase 2).", 501)
+    notifications = NotificationService.list_for_user(int(get_jwt_identity()))
+    return success_response(data={"items": [NotificationService.to_dict(n) for n in notifications]})
 
 
-@notifications_bp.route("/<int:notification_id>/read", methods=["PUT"])
-def mark_as_read(notification_id):
-    """TODO (Fase 2): Marcar notificación como leída."""
-    from app.shared.responses import error_response
-    return error_response("Módulo notifications — implementación pendiente (Fase 2).", 501)
-
-
-@notifications_bp.route("/read-all", methods=["PUT"])
-def mark_all_as_read():
-    """TODO (Fase 2): Marcar todas las notificaciones como leídas."""
-    from app.shared.responses import error_response
-    return error_response("Módulo notifications — implementación pendiente (Fase 2).", 501)
-
-
-@notifications_bp.route("/unread-count", methods=["GET"])
-def get_unread_count():
-    """TODO (Fase 2): Obtener cantidad de notificaciones no leídas."""
-    from app.shared.responses import error_response
-    return error_response("Módulo notifications — implementación pendiente (Fase 2).", 501)
+@notifications_bp.route("/<int:notification_id>/read", methods=["POST"])
+@jwt_required()
+def mark_notification_read(notification_id):
+    try:
+        notification = NotificationService.mark_as_read(notification_id, int(get_jwt_identity()))
+        return success_response(data=NotificationService.to_dict(notification))
+    except ValueError as exc:
+        return error_response(str(exc), 404, "NOTIFICATION_NOT_FOUND")

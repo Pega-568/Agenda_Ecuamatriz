@@ -5,7 +5,7 @@ Agenda Ecuamatriz
 ⚠️  No instanciar ni migrar hasta Fase 8.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -35,8 +35,8 @@ class MeetingTranscript(db.Model):
     status = db.Column(db.String(30), nullable=False, default="pending")
     # pending | processing | completed | failed
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    completed_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     def __repr__(self) -> str:
         return f"<MeetingTranscript id={self.id} meeting={self.meeting_id} status={self.status}>"
@@ -69,10 +69,10 @@ class TechnicalSheetDraft(db.Model):
     reviewed_by_user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=True
     )
-    reviewed_at = db.Column(db.DateTime, nullable=True)
+    reviewed_at = db.Column(db.DateTime(timezone=True), nullable=True)
     is_approved = db.Column(db.Boolean, default=False)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     def __repr__(self) -> str:
         return f"<TechnicalSheetDraft id={self.id} meeting={self.meeting_id} approved={self.is_approved}>"

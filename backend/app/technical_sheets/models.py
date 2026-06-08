@@ -3,7 +3,7 @@ app/technical_sheets/models.py — Modelo: TechnicalSheet
 Agenda Ecuamatriz
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -56,14 +56,14 @@ class TechnicalSheet(db.Model):
     created_by_user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=False
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    finalized_at = db.Column(db.DateTime, nullable=True)
+    finalized_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # ─── Futuro (Fase 8) — integración con transcripción ─────────────────
     # generated_from_transcript: bool — Si fue generada desde transcripción
@@ -77,7 +77,7 @@ class TechnicalSheet(db.Model):
     def finalize(self):
         """Marca la ficha como finalizada."""
         self.status = TechnicalSheetStatus.FINALIZED
-        self.finalized_at = datetime.utcnow()
+        self.finalized_at = datetime.now(timezone.utc)
 
     def __repr__(self) -> str:
         return f"<TechnicalSheet id={self.id} meeting={self.meeting_id} status={self.status}>"

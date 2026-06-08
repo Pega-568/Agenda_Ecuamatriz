@@ -6,7 +6,7 @@ Patrón: tabla key-value para configuración del sistema.
 Permite al Administrador configurar parámetros sin tocar código.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -44,9 +44,9 @@ class SystemSetting(db.Model):
     description = db.Column(db.Text, nullable=True)
 
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_by_user_id = db.Column(

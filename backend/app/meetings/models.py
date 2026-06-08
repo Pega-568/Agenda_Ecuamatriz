@@ -8,7 +8,7 @@ FLUJO ÚNICO DE REUNIÓN:
     → aceptación/rechazo → asistencia QR → ficha técnica posterior
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -111,14 +111,14 @@ class Meeting(db.Model):
     )
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    cancelled_at = db.Column(db.DateTime, nullable=True)
+    cancelled_at = db.Column(db.DateTime(timezone=True), nullable=True)
     cancellation_reason = db.Column(db.Text, nullable=True)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
@@ -182,7 +182,7 @@ class MeetingParticipant(db.Model):
         default=InvitationStatus.PENDING,
     )
     response_comment = db.Column(db.Text, nullable=True)   # Comentario al rechazar
-    responded_at = db.Column(db.DateTime, nullable=True)
+    responded_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # ─── Estado de asistencia ─────────────────────────────────────────────
     attendance_status = db.Column(
@@ -191,7 +191,7 @@ class MeetingParticipant(db.Model):
         default=AttendanceStatus.NOT_MARKED,
     )
     attendance_method = db.Column(db.String(30), nullable=True)
-    attendance_marked_at = db.Column(db.DateTime, nullable=True)
+    attendance_marked_at = db.Column(db.DateTime(timezone=True), nullable=True)
     attendance_justification = db.Column(db.Text, nullable=True)
 
     # ─── Constraints ─────────────────────────────────────────────────────

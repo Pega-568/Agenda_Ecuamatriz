@@ -8,7 +8,7 @@ Implementa flask_login.UserMixin para compatibilidad con Flask-Login
 (autenticación web con sesiones servidor).
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_login import UserMixin
 from app import db
 
@@ -62,14 +62,14 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    last_login_at = db.Column(db.DateTime, nullable=True)
+    last_login_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
     role = db.relationship("Role", back_populates="users", lazy="joined")

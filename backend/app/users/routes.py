@@ -13,48 +13,91 @@ Endpoints:
 Fase de implementación: Fase 1
 """
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 users_bp = Blueprint("users", __name__)
 
 
 @users_bp.route("/", methods=["GET"])
 def list_users():
-    """TODO (Fase 1): Listar usuarios. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Lista usuarios."""
+    from app.shared.responses import success_response
+    from app.users.service import UserService
+
+    users = UserService.search(request.args.get("q", ""), request.args.get("area_id", type=int))
+    return success_response(data=[UserService.to_dict(user) for user in users])
 
 
 @users_bp.route("/", methods=["POST"])
 def create_user():
-    """TODO (Fase 1): Crear usuario. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Crea usuario."""
+    from marshmallow import ValidationError
+    from app.shared.responses import created_response, error_response, validation_error_response
+    from app.users.schemas import UserCreateSchema
+    from app.users.service import UserService
+
+    try:
+        payload = UserCreateSchema().load(request.get_json(silent=True) or {})
+        user = UserService.create_user(payload)
+        return created_response(UserService.to_dict(user))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except (KeyError, ValueError) as exc:
+        return error_response(str(exc), 422, "USER_VALIDATION_ERROR")
 
 
 @users_bp.route("/<int:user_id>", methods=["GET"])
 def get_user(user_id):
-    """TODO (Fase 1): Detalle de usuario."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Detalle de usuario."""
+    from app.shared.responses import error_response, success_response
+    from app.users.service import UserService
+
+    user = UserService.get_by_id(user_id)
+    if not user:
+        return error_response("Usuario no encontrado.", 404, "USER_NOT_FOUND")
+    return success_response(data=UserService.to_dict(user))
 
 
 @users_bp.route("/<int:user_id>", methods=["PUT"])
 def update_user(user_id):
-    """TODO (Fase 1): Editar usuario. Admin o propietario."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Edita usuario."""
+    from marshmallow import ValidationError
+    from app.shared.responses import error_response, success_response, validation_error_response
+    from app.users.schemas import UserUpdateSchema
+    from app.users.service import UserService
+
+    try:
+        payload = UserUpdateSchema().load(request.get_json(silent=True) or {})
+        user = UserService.update_user(user_id, payload)
+        return success_response(data=UserService.to_dict(user))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except ValueError as exc:
+        return error_response(str(exc), 422, "USER_VALIDATION_ERROR")
 
 
 @users_bp.route("/<int:user_id>", methods=["DELETE"])
 def deactivate_user(user_id):
-    """TODO (Fase 1): Desactivar usuario. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Desactiva usuario."""
+    from app.shared.responses import error_response, success_response
+    from app.users.service import UserService
+
+    try:
+        user = UserService.set_active(user_id, False)
+        return success_response(data=UserService.to_dict(user))
+    except ValueError as exc:
+        return error_response(str(exc), 404, "USER_NOT_FOUND")
 
 
 @users_bp.route("/search", methods=["GET"])
 def search_users():
-    """TODO (Fase 1): Buscar usuarios por nombre/área para invitar a reunión."""
-    from app.shared.responses import error_response
-    return error_response("Módulo users — implementación pendiente (Fase 1).", 501)
+    """Busca usuarios por nombre, correo o área."""
+    from app.shared.responses import success_response
+    from app.users.service import UserService
+
+    users = UserService.search_for_meetings(
+        query=request.args.get("q", ""),
+        area_id=request.args.get("area_id", type=int),
+        limit=request.args.get("limit", default=20, type=int),
+    )
+    return success_response(data={"items": [UserService.to_search_item(user) for user in users]})

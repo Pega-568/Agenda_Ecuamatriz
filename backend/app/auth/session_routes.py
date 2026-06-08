@@ -19,7 +19,8 @@ Reglas:
 Fase de implementación: Fase 1
 """
 
-from flask import Blueprint
+from flask import Blueprint, redirect, render_template, request, url_for
+from flask_login import current_user, login_required, login_user, logout_user
 
 auth_web_bp = Blueprint("auth_web", __name__)
 
@@ -31,10 +32,11 @@ def login_form():
     Muestra el formulario de login.
     Si el usuario ya está autenticado, redirige a su dashboard.
 
-    TODO (Fase 1): Implementar con render_template("auth/login.html")
+    Implementado en Fase 1.
     """
-    from app.shared.responses import error_response
-    return error_response("Vista de login web — implementación pendiente (Fase 1).", 501)
+    if current_user.is_authenticated:
+        return redirect(url_for("auth_web.dashboard"))
+    return render_template("auth/login.html", error=None)
 
 
 @auth_web_bp.route("/login", methods=["POST"])
@@ -48,10 +50,17 @@ def login_submit():
     Si son inválidas:
         - Vuelve al formulario con mensaje de error.
 
-    TODO (Fase 1): Implementar con AuthService.authenticate() + login_user()
+    Implementado en Fase 1.
     """
-    from app.shared.responses import error_response
-    return error_response("Login web — implementación pendiente (Fase 1).", 501)
+    from app.auth.service import AuthService
+
+    email = request.form.get("email", "")
+    password = request.form.get("password", "")
+    user = AuthService.authenticate(email, password)
+    if not user:
+        return render_template("auth/login.html", error="Credenciales inválidas o usuario inactivo."), 401
+    login_user(user)
+    return redirect(url_for("auth_web.dashboard"))
 
 
 @auth_web_bp.route("/logout")
@@ -61,7 +70,14 @@ def logout():
     Cierra la sesión del usuario actual.
     Llama a logout_user() de Flask-Login y redirige a /auth/login.
 
-    TODO (Fase 1): Implementar con logout_user() + redirect
+    Implementado en Fase 1.
     """
-    from app.shared.responses import error_response
-    return error_response("Logout web — implementación pendiente (Fase 1).", 501)
+    logout_user()
+    return redirect(url_for("auth_web.login_form"))
+
+
+@auth_web_bp.route("/dashboard")
+@login_required
+def dashboard():
+    """Dashboard mínimo por rol para validar sesión web."""
+    return render_template("dashboard.html")

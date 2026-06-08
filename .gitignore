@@ -118,6 +118,7 @@ stitch_*.zip
 *.rar
 *.7z
 *.html
+!web/templates/**/*.html
 *.mp3
 *.mp4
 *.wav

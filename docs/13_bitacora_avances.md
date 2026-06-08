@@ -188,5 +188,104 @@
 
 ---
 
+### [2026-06-08] — Fase 1 — Backend base funcional
+
+**Qué se hizo**:
+- Creada rama `phase-1/backend-base` desde `phase-0/bootstrap`.
+- Implementados servicios base para `auth`, `roles`, `users`, `areas`, `rooms`, `settings` y `calendar/work schedule`.
+- Agregados schemas Marshmallow para validación de entradas en usuarios, áreas, salas, settings y horario laboral.
+- Implementado login web con Flask-Login, logout y dashboard mínimo.
+- Preparado login API JWT mínimo y `/api/auth/me`, separado del login web.
+- Agregado modelo `WorkSchedule` para horario laboral semanal.
+- Inicializado Flask-Migrate/Alembic y creada migración inicial `9f7c5986fbf4_initial_schema_phase_1.py`.
+- Actualizado `scripts/seed_all.py` para crear datos base de Fase 1 de forma idempotente.
+- Agregados tests de Fase 1 contra PostgreSQL Docker.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: `agenda_ecuamatriz_db` healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 24 passed, 149 warnings por `datetime.utcnow()`.
+- `/health`: `{"app":"Agenda Ecuamatriz","database":"ok","status":"ok"}`.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker mediante `TEST_DATABASE_URL`.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se implementaron reuniones, QR, asistencia, fichas técnicas, Android ni frontend avanzado.
+
+**Próximo paso — Fase 2**:
+- Implementar flujo de reuniones, disponibilidad y reglas de agenda sobre la base ya migrada y testeada.
+
+---
+
+### [2026-06-08] — Fase 2 — Reuniones y disponibilidad integrada
+
+**Qué se hizo**:
+- Creada rama `phase-2/meetings-availability` desde `phase-1/backend-base`.
+- Revisados timestamps y actualizado `db.DateTime(timezone=True)` para campos de sistema/auditoría.
+- Creada migración `b231a19c6a0b_timezone_aware_datetimes_phase_2.py`.
+- Implementado `GET /api/users/search` para búsqueda de invitados activos, excluyendo admin.
+- Implementado servicio de disponibilidad integrada en `app/availability/service.py`.
+- Implementados endpoints de reuniones:
+  - `POST /api/meetings/check-availability`
+  - `POST /api/meetings`
+  - `GET /api/meetings`
+  - `GET /api/meetings/<id>`
+  - `POST /api/meetings/<id>/accept`
+  - `POST /api/meetings/<id>/reject`
+  - `POST /api/meetings/<id>/cancel`
+- Implementado servicio de notificaciones internas y endpoints de polling.
+- Implementado servicio de auditoría para acciones críticas de reunión.
+- Agregados schemas Marshmallow de reuniones y disponibilidad.
+- Agregados tests de Fase 2 contra PostgreSQL Docker.
+
+**Decisiones tomadas**:
+- Timestamps internos timezone-aware con UTC.
+- Fecha/hora de reunión permanecen como `date` + `time`.
+- Creador bloquea agenda desde la creación.
+- Invitados solo bloquean agenda al aceptar.
+- Invitación pendiente o rechazada no bloquea agenda.
+- Reunión cancelada no bloquea disponibilidad.
+- Admin no opera reuniones ni puede ser invitado.
+- `suggested_slots` queda como lista vacía documentada para fase posterior.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: PostgreSQL healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 37 passed.
+- `/health`: HTTP 200.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se copiaron archivos de Stitch.
+- No se implementaron QR, asistencia, fichas técnicas, audio/transcripción, Android ni frontend avanzado.
+
+---
+
+### [2026-06-08] — Fase 2 — Revisión y cierre de Módulo de Reuniones
+
+**Qué se hizo**:
+- Validación de que la estructura base del módulo de reuniones implementa satisfactoriamente todas las restricciones de negocio relacionadas a disponibilidad cruzada de agenda, bloqueos y control de acceso.
+- Ejecución completa de pruebas de cobertura.
+
+**Resultados**:
+- Se ejecutaron 37 tests, validando rigurosamente que las agendas son bloqueadas únicamente cuando existen confirmaciones reales, permitiendo el estado pendiente.
+- Las notificaciones locales y auditorías (AuditLog) se disparan correctamente durante el ciclo de vida de la reunión (creación, aceptación, rechazo, cancelación).
+- Se confirmó la integridad del uso de Timezone Aware Datetimes (`db.DateTime(timezone=True)`) con la migración `b231a19c6a0b`.
+- Los flujos de acceso son correctos, impidiendo a los administradores generar reuniones u operar como participantes, y restringiendo a las secretarias únicamente a acceso de lectura general.
+- Se redactó y publicó el acta de revisión formal en `docs/16_revision_fase_2.md`.
+- El entorno se mantiene totalmente limpio sin restos de código desechable o versiones obsoletas.
+
+**Próximo paso — Fase 3**:
+- Generación y asignación de códigos QR únicos (AttendanceToken).
+- Flujo de escaneo, comprobación de validez y marcado de asistencia.
+- Levantamiento de actas o fichas técnicas pos-reunión.
+
+---
+
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*

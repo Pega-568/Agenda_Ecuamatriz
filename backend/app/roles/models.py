@@ -34,7 +34,7 @@ class Role(db.Model):
 # Usar estas constantes en decoradores y validaciones, no strings directos.
 class RoleSlug:
     ADMIN = "admin"
-    SECRETARY = "secretary"
-    USER = "user"
+    SECRETARY = "secretaria"
+    USER = "usuario"
 
     ALL = [ADMIN, SECRETARY, USER]
