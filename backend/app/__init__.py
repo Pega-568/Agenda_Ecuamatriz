@@ -281,6 +281,15 @@ def _register_blueprints(app: Flask):
     csrf.exempt(meetings_bp)
     app.register_blueprint(meetings_bp, url_prefix="/api/meetings")
 
+    # ─── API Móvil Específica (Android Fase 7+) ───────────────────────────
+    from app.api.mobile.meeting_routes import mobile_meetings_bp
+    csrf.exempt(mobile_meetings_bp)
+    app.register_blueprint(mobile_meetings_bp, url_prefix="/api/mobile/meetings")
+
+    from app.api.mobile.attendance_routes import mobile_attendance_bp
+    csrf.exempt(mobile_attendance_bp)
+    app.register_blueprint(mobile_attendance_bp, url_prefix="/api/mobile/attendance")
+
     # ─── Availability ─────────────────────────────────────────────────────
     from app.availability.routes import availability_bp
     csrf.exempt(availability_bp)

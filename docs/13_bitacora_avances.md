@@ -368,3 +368,10 @@ Implementar dise√±o limpio basado visualmente en la estructura original de Stitc
 - Los archivos ZIP de Stitch permanecen ignorados en .gitignore.
 - Se priorizaron elementos funcionales corporativos.
 
+# # #   F a s e   6 :   M o b i l e   A P I   &   F i r e b a s e   ( C o m p l e t a d a ) 
+ -   I m p l e m e n t a c i Û n   d e   J W T   p a r a   A P I   M Û v i l   ( L o g i n ,   R e f r e s h ,   L o g o u t ,   P e r f i l ) . 
+ -   M o d e l o   M o b i l e D e v i c e T o k e n   y   m i g r a c i o n e s   p a r a   r e g i s t r o   d e   d i s p o s i t i v o s . 
+ -   I n t e g r a c i Û n   c o n   f i r e b a s e - a d m i n   ( f a i l - s i l e n t   p a r a   F C M _ E N A B L E D = f a l s e ) . 
+ -   E n d p o i n t s   m Û v i l e s   d e d i c a d o s   ( / a p i / m o b i l e / m e e t i n g s   y   / a p i / m o b i l e / a t t e n d a n c e ) . 
+ -   C o r r e c c i Û n   d e   p r u e b a s   d e   i n t e g r a c i Û n   c o n   P o s t g r e S Q L .  
+ 

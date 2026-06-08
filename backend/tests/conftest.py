@@ -113,12 +113,16 @@ def app():
     flask_app = create_app(TestConfig)
 
     with flask_app.app_context():
-        _db.drop_all()
+        with _db.engine.connect() as conn:
+            conn.execute(_db.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+            conn.commit()
         _db.create_all()
         _seed_test_roles_and_areas()
         yield flask_app
         _db.session.remove()
-        _db.drop_all()
+        with _db.engine.connect() as conn:
+            conn.execute(_db.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+            conn.commit()
 
 
 @pytest.fixture(scope="function")

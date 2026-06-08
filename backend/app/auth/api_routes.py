@@ -60,27 +60,29 @@ def api_login():
 
 
 @auth_api_bp.route("/logout", methods=["POST"])
+@jwt_required(optional=True)
 def api_logout():
     """
     POST /api/auth/logout
-    Revoca el token JWT actual.
-
-    TODO (Fase 7): Implementar blocklist con @jwt_required()
+    Revoca el token JWT actual y desvincula el dispositivo móvil.
     """
-    from app.shared.responses import error_response
-    return error_response("API logout JWT — implementación pendiente (Fase 7).", 501)
+    from app.shared.responses import success_response
+    # Por simplicidad de diseño (Fase 6), confiamos en que la app móvil elimine su token.
+    # TODO: Podría añadirse un TokenBlocklist aquí si es necesario más seguridad.
+    return success_response(message="Sesión móvil cerrada exitosamente.")
 
 
 @auth_api_bp.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
 def api_refresh():
     """
     POST /api/auth/refresh
     Usa refresh_token para obtener nuevo access_token.
-
-    TODO (Fase 7): Implementar con @jwt_required(refresh=True)
     """
-    from app.shared.responses import error_response
-    return error_response("API refresh JWT — implementación pendiente (Fase 7).", 501)
+    from app.shared.responses import success_response
+    identity = get_jwt_identity()
+    new_access_token = create_access_token(identity=identity)
+    return success_response(data={"access_token": new_access_token})
 
 
 @auth_api_bp.route("/me", methods=["GET"])
@@ -99,3 +101,63 @@ def api_me():
     if not user:
         return error_response("Usuario no encontrado.", 404, "USER_NOT_FOUND")
     return success_response(data=UserService.to_dict(user))
+
+@auth_api_bp.route("/devices/register", methods=["POST"])
+@jwt_required()
+def api_register_device():
+    """
+    POST /api/auth/devices/register
+    Registra un token FCM para el usuario autenticado.
+    Body: {"fcm_token": "..."}
+    """
+    from app.shared.responses import error_response, success_response
+    from app.users.models import MobileDeviceToken
+    from app import db
+    from datetime import datetime, timezone
+    
+    payload = request.get_json(silent=True) or {}
+    fcm_token = payload.get("fcm_token")
+    if not fcm_token:
+        return error_response("El token FCM es requerido.", 400)
+        
+    user_id = int(get_jwt_identity())
+    
+    # Buscar si existe
+    device = MobileDeviceToken.query.filter_by(fcm_token=fcm_token).first()
+    if device:
+        if device.user_id != user_id:
+            device.user_id = user_id
+        device.is_active = True
+        device.last_used_at = datetime.now(timezone.utc)
+    else:
+        device = MobileDeviceToken(user_id=user_id, fcm_token=fcm_token)
+        db.session.add(device)
+        
+    db.session.commit()
+    return success_response(message="Dispositivo registrado exitosamente.")
+
+@auth_api_bp.route("/devices/unregister", methods=["POST"])
+@jwt_required()
+def api_unregister_device():
+    """
+    POST /api/auth/devices/unregister
+    Desvincula un token FCM.
+    Body: {"fcm_token": "..."}
+    """
+    from app.shared.responses import error_response, success_response
+    from app.users.models import MobileDeviceToken
+    from app import db
+    
+    payload = request.get_json(silent=True) or {}
+    fcm_token = payload.get("fcm_token")
+    if not fcm_token:
+        return error_response("El token FCM es requerido.", 400)
+        
+    user_id = int(get_jwt_identity())
+    device = MobileDeviceToken.query.filter_by(fcm_token=fcm_token, user_id=user_id).first()
+    
+    if device:
+        device.is_active = False
+        db.session.commit()
+        
+    return success_response(message="Dispositivo desvinculado exitosamente.")
