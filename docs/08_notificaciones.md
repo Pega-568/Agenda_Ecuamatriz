@@ -1,8 +1,8 @@
 # 08 — Notificaciones
 
-## Alcance Fase 2
+## Alcance Fase 3
 
-Fase 2 implementa notificaciones internas persistidas en base de datos. No implementa FCM, WebSocket, Server-Sent Events ni push Android. La lectura queda disponible por API para polling futuro.
+Fase 3 mantiene notificaciones internas persistidas en base de datos y agrega eventos relacionados con QR/asistencia. No implementa FCM, WebSocket, Server-Sent Events ni push Android. La lectura queda disponible por API para polling futuro.
 
 ## Eventos implementados
 
@@ -12,6 +12,9 @@ Fase 2 implementa notificaciones internas persistidas en base de datos. No imple
 | `meeting_accepted` | Creador | Cuando un invitado acepta. |
 | `meeting_rejected` | Creador | Cuando un invitado rechaza. |
 | `meeting_cancelled` | Invitados | Cuando creador o Secretaría cancela. |
+| `qr_available` | Creador | Cuando se crea un token QR de asistencia. |
+| `attendance_marked` | Creador | Cuando un invitado marca asistencia por QR. |
+| `manual_attendance_marked` | Participante | Cuando Secretaría o creador actualiza asistencia manualmente. |
 
 ## Estructura
 
@@ -43,7 +46,10 @@ Fase 2 implementa notificaciones internas persistidas en base de datos. No imple
 - Si la reunión no se crea por bloqueos duros, no se generan notificaciones.
 - Cancelar una reunión notifica a todos los invitados registrados.
 - Aceptar o rechazar notifica al creador.
-- Admin no opera reuniones, por lo tanto no genera eventos de Fase 2.
+- Crear token QR registra `qr_available`.
+- Marcar por QR registra `attendance_marked`.
+- Marcar manualmente registra `manual_attendance_marked`.
+- Admin no opera reuniones ni asistencia, por lo tanto no genera eventos de Fase 3.
 
 ## Pendiente
 
@@ -51,8 +57,8 @@ Fase 2 implementa notificaciones internas persistidas en base de datos. No imple
 - Marcar todas como leídas.
 - FCM para Android.
 - WebSocket o SSE si se requiere tiempo real.
-- Recordatorios de reunión y QR disponible en fases posteriores.
+- Recordatorios de reunión.
 
 ---
 
-*Documento actualizado en Fase 2 — Agenda Ecuamatriz*
+*Documento actualizado en Fase 3 — Agenda Ecuamatriz*

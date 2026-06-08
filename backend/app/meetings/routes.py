@@ -6,6 +6,8 @@ from flask import Blueprint, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 
+from app.attendance.schemas import ManualAttendanceSchema
+from app.attendance.service import AttendanceService
 from app.availability.schemas import AvailabilityCheckSchema
 from app.availability.service import AvailabilityService
 from app.meetings.schemas import MeetingCancelSchema, MeetingCreateSchema, MeetingRejectSchema
@@ -132,6 +134,52 @@ def cancel_meeting(meeting_id):
         return error_response(str(exc), 403, "FORBIDDEN")
     except ValueError as exc:
         return error_response(str(exc), 409, "MEETING_CANCEL_ERROR")
+
+
+@meetings_bp.route("/<int:meeting_id>/attendance-token", methods=["POST"])
+@jwt_required()
+def attendance_token(meeting_id):
+    """Genera u obtiene metadatos del token QR activo de asistencia."""
+    try:
+        return success_response(data=AttendanceService.generate_or_get_attendance_token(meeting_id, _current_user()))
+    except PermissionError as exc:
+        return error_response(str(exc), 403, "FORBIDDEN")
+    except ValueError as exc:
+        return error_response(str(exc), 409, "ATTENDANCE_TOKEN_ERROR")
+
+
+@meetings_bp.route("/<int:meeting_id>/attendance", methods=["GET"])
+@jwt_required()
+def attendance_report(meeting_id):
+    """Consulta asistencia completa de una reunión."""
+    try:
+        return success_response(data=AttendanceService.attendance_report(meeting_id, _current_user()))
+    except PermissionError as exc:
+        return error_response(str(exc), 403, "FORBIDDEN")
+    except ValueError as exc:
+        return error_response(str(exc), 404, "MEETING_NOT_FOUND")
+
+
+@meetings_bp.route("/<int:meeting_id>/attendance/manual", methods=["POST"])
+@jwt_required()
+def manual_attendance(meeting_id):
+    """Marca asistencia manual por Secretaría o creador según settings."""
+    try:
+        payload = ManualAttendanceSchema().load(request.get_json(silent=True) or {})
+        participant = AttendanceService.mark_manual(
+            meeting_id,
+            _current_user(),
+            payload["user_id"],
+            payload["attendance_status"],
+            payload.get("comment"),
+        )
+        return success_response(data=AttendanceService.participant_to_dict(participant))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except PermissionError as exc:
+        return error_response(str(exc), 403, "FORBIDDEN")
+    except ValueError as exc:
+        return error_response(str(exc), 409, "MANUAL_ATTENDANCE_ERROR")
 
 
 def _parse_date(value: str | None):

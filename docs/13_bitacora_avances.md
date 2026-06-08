@@ -287,5 +287,57 @@
 
 ---
 
+### [2026-06-08] — Fase 3 — QR fijo y control de asistencia
+
+**Qué se hizo**:
+- Creada rama `phase-3/attendance-qr` desde `phase-2/meetings-availability`.
+- Implementado servicio `app/attendance/service.py`.
+- Implementado schema `ManualAttendanceSchema`.
+- Actualizado `AttendanceToken` para guardar `token_hash` en lugar de token plano.
+- Agregados campos de control manual en `MeetingParticipant`.
+- Agregados settings QR/manuales al seeder.
+- Implementados endpoints:
+  - `POST /api/meetings/<meeting_id>/attendance-token`
+  - `POST /api/attendance/qr/<token>`
+  - `GET /api/meetings/<meeting_id>/attendance`
+  - `POST /api/meetings/<meeting_id>/attendance/manual`
+- Agregados eventos de auditoría:
+  - `attendance_token_created`
+  - `attendance_marked_qr`
+  - `attendance_marked_manual`
+- Agregados eventos de notificación:
+  - `qr_available`
+  - `attendance_marked`
+  - `manual_attendance_marked`
+- Creada migración `6b7a85062386_qr_attendance_phase_3.py`.
+- Agregados tests de Fase 3 contra PostgreSQL Docker.
+
+**Decisiones tomadas**:
+- QR fijo por reunión, no dinámico.
+- El token plano se entrega solo al crear el QR y no se persiste.
+- La base guarda `token_hash`.
+- Si ya existe token activo, se mantiene uno solo y no se reconstruye el token plano.
+- Invitados `pending` o `rejected` no marcan asistencia por QR.
+- No se implementa finalize; ausentes se calcularán después desde `accepted + not_marked`.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: PostgreSQL healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 46 passed.
+- `/health`: HTTP 200.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se copiaron archivos de Stitch.
+- No se implementaron fichas técnicas, audio/transcripción, Android, reportes Excel ni frontend avanzado.
+
+**Próximo paso — Fase 4**:
+- Fichas técnicas/actas posteriores a reunión y cálculo formal de ausentes, sin depender todavía de audio/transcripción.
+
+---
+
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*

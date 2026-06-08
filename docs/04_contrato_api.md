@@ -253,6 +253,128 @@ Requiere JWT. Solo creador o Secretaría. Admin no opera reuniones.
 
 Marca la reunión como `cancelled`, notifica invitados y deja de bloquear disponibilidad.
 
+### POST /api/meetings/<id>/attendance-token
+
+Requiere JWT. Solo creador o Secretaría. Admin recibe `403`.
+
+Genera el token QR fijo de asistencia si no existe uno activo. Si ya existe, mantiene un solo token activo y devuelve metadatos, pero no reconstruye el token plano porque solo se guarda `token_hash`.
+
+Respuesta al crear token:
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting_id": 1,
+    "attendance_url": "http://localhost:5000/attendance/qr/<token>",
+    "qr_payload": "http://localhost:5000/attendance/qr/<token>",
+    "token_available": true,
+    "token_created": true,
+    "valid_from": "2026-06-12T09:50:00",
+    "valid_until": "2026-06-12T11:20:00"
+  }
+}
+```
+
+Respuesta cuando ya existe token activo:
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting_id": 1,
+    "attendance_url": null,
+    "qr_payload": null,
+    "token_available": false,
+    "token_created": false,
+    "valid_from": "2026-06-12T09:50:00",
+    "valid_until": "2026-06-12T11:20:00"
+  }
+}
+```
+
+### GET /api/meetings/<id>/attendance
+
+Requiere JWT. Solo creador o Secretaría.
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting_id": 1,
+    "summary": {
+      "total_invited": 5,
+      "present": 3,
+      "absent": 1,
+      "not_marked": 1,
+      "justified": 0
+    },
+    "participants": [
+      {
+        "user_id": 2,
+        "full_name": "Usuario Demo",
+        "invitation_status": "accepted",
+        "attendance_status": "present",
+        "attendance_method": "qr",
+        "attendance_marked_at": "2026-06-12T10:05:00+00:00",
+        "attendance_marked_by_user_id": 2,
+        "attendance_comment": null
+      }
+    ]
+  }
+}
+```
+
+### POST /api/meetings/<id>/attendance/manual
+
+Requiere JWT. Secretaría puede marcar si `allow_manual_attendance_by_secretary=true`. El creador puede marcar si `allow_manual_attendance_by_creator=true`. Admin no opera asistencia.
+
+```json
+{
+  "user_id": 2,
+  "attendance_status": "present",
+  "comment": "Marcado manual por Secretaría"
+}
+```
+
+Reglas:
+
+- El usuario debe ser participante.
+- Reuniones canceladas no permiten marcado.
+- Usuarios que rechazaron solo pueden ser marcados por Secretaría con comentario obligatorio.
+- Método registrado: `manual_secretary` o `manual_creator`.
+
+## Asistencia QR
+
+### POST /api/attendance/qr/<token>
+
+Requiere JWT. Marca asistencia del usuario autenticado con QR fijo.
+
+Reglas:
+
+- `qr_attendance_enabled=true`.
+- Token activo y válido por hash.
+- Reunión no cancelada.
+- Usuario participante.
+- Invitación `accepted`.
+- Dentro de ventana `start_time - qr_valid_before_minutes` y `end_time + qr_valid_after_minutes`.
+- Doble marcado devuelve `409`.
+
+Respuesta:
+
+```json
+{
+  "success": true,
+  "data": {
+    "status": "ok",
+    "message": "Asistencia registrada correctamente",
+    "meeting_id": 1,
+    "attendance_status": "present",
+    "attendance_method": "qr"
+  }
+}
+```
+
 ## Notificaciones
 
 ### GET /api/notifications/
@@ -275,11 +397,14 @@ Marca una notificación propia como leída.
 | `MEETING_REJECT_ERROR` | No se pudo rechazar la invitación. |
 | `MEETING_CANCEL_ERROR` | No se pudo cancelar la reunión. |
 | `NOTIFICATION_NOT_FOUND` | Notificación inexistente o ajena. |
+| `ATTENDANCE_TOKEN_ERROR` | Error al generar u obtener token QR. |
+| `QR_ATTENDANCE_ERROR` | Error al marcar asistencia por QR. |
+| `MANUAL_ATTENDANCE_ERROR` | Error al marcar asistencia manual. |
 
-## Fuera de alcance en Fase 2
+## Fuera de alcance en Fase 3
 
-Los endpoints de QR, asistencia, fichas técnicas, grabación, transcripción, Android, FCM y WebSocket no se implementan en esta fase.
+Fichas técnicas, grabación, transcripción, Android, reportes Excel, FCM, WebSocket, QR dinámico/rotativo y frontend avanzado no se implementan en esta fase.
 
 ---
 
-*Documento actualizado en Fase 2 — Agenda Ecuamatriz*
+*Documento actualizado en Fase 3 — Agenda Ecuamatriz*

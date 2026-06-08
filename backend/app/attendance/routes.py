@@ -1,44 +1,38 @@
-"""
-app/attendance/routes.py — Rutas del módulo Attendance / QR
-Agenda Ecuamatriz
-
-Endpoints:
-    GET    /api/attendance/<meeting_id>/qr       — Obtener QR de la reunión (creador)
-    POST   /api/attendance/scan                  — Marcar asistencia escaneando QR
-    GET    /api/attendance/<meeting_id>/report   — Ver asistencia de reunión
-    PUT    /api/attendance/<meeting_id>/manual   — Marcar asistencia manual (Secretaría/creador)
-
-Fase de implementación: Fase 4
-"""
+"""Rutas de asistencia por QR."""
 
 from flask import Blueprint
+from flask_jwt_extended import get_jwt_identity, jwt_required
+
+from app.attendance.service import AttendanceService
+from app.shared.responses import error_response, success_response
+from app.users.service import UserService
 
 attendance_bp = Blueprint("attendance", __name__)
 
 
-@attendance_bp.route("/<int:meeting_id>/qr", methods=["GET"])
-def get_meeting_qr(meeting_id):
-    """TODO (Fase 4): Obtener QR fijo de reunión. Solo creador."""
-    from app.shared.responses import error_response
-    return error_response("Módulo attendance — implementación pendiente (Fase 4).", 501)
+def _current_user():
+    user = UserService.get_by_id(get_jwt_identity())
+    if not user:
+        raise PermissionError("Usuario no autenticado.")
+    return user
 
 
-@attendance_bp.route("/scan", methods=["POST"])
-def scan_qr():
-    """TODO (Fase 4): Marcar asistencia mediante escaneo QR."""
-    from app.shared.responses import error_response
-    return error_response("Módulo attendance — implementación pendiente (Fase 4).", 501)
-
-
-@attendance_bp.route("/<int:meeting_id>/report", methods=["GET"])
-def get_attendance_report(meeting_id):
-    """TODO (Fase 4): Ver reporte de asistencia de una reunión."""
-    from app.shared.responses import error_response
-    return error_response("Módulo attendance — implementación pendiente (Fase 4).", 501)
-
-
-@attendance_bp.route("/<int:meeting_id>/manual", methods=["PUT"])
-def manual_attendance(meeting_id):
-    """TODO (Fase 5): Marcar asistencia manual. Secretaría o creador."""
-    from app.shared.responses import error_response
-    return error_response("Módulo attendance — implementación pendiente (Fase 5).", 501)
+@attendance_bp.route("/qr/<path:token>", methods=["POST"])
+@jwt_required()
+def mark_qr_attendance(token):
+    """Marca asistencia de un participante mediante QR fijo."""
+    try:
+        participant = AttendanceService.mark_by_qr(token, _current_user())
+        return success_response(
+            data={
+                "status": "ok",
+                "message": "Asistencia registrada correctamente",
+                "meeting_id": participant.meeting_id,
+                "attendance_status": participant.attendance_status,
+                "attendance_method": participant.attendance_method,
+            }
+        )
+    except PermissionError as exc:
+        return error_response(str(exc), 403, "FORBIDDEN")
+    except ValueError as exc:
+        return error_response(str(exc), 409, "QR_ATTENDANCE_ERROR")
