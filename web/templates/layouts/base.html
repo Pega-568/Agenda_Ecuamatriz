@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Agenda Ecuamatriz{% endblock %}</title>
+  
+  <!-- Estilos Corporativos -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="layout-wrapper">
+    <!-- Sidebar Partial -->
+    {% include 'layouts/partials/sidebar.html' %}
+    
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Topbar Partial -->
+      {% include 'layouts/partials/topbar.html' %}
+      
+      <!-- Page Content -->
+      <main class="page-content">
+        <!-- Flashes Partial -->
+        {% include 'layouts/partials/flashes.html' %}
+        
+        <div class="page-header">
+          <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+          <div class="page-actions">
+            {% block page_actions %}{% endblock %}
+          </div>
+        </div>
+        
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

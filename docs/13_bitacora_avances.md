@@ -341,3 +341,30 @@
 
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*
+### 5. Fase 5: Web Operativa (Completada)
+
+**Objetivo Logrado**:
+Construir la interfaz web principal del sistema Agenda Ecuamatriz utilizando Jinja2 (Vanilla HTML/CSS).
+Implementar diseño limpio basado visualmente en la estructura original de Stitch pero con código limpio y modular, usando la identidad de Ecuamatriz.
+
+**Acciones Realizadas**:
+- **CSS Modular**: Se creó un sistema de diseño modular en web/static/css/ (pp.css, layout.css, components.css, orms.css).
+- **Plantillas Jinja2**: 
+  - Layouts base y auth.
+  - Vistas divididas en módulos lógicos por rol: dmin/, user/, secretary/.
+- **Rutas Web y Permisos**:
+  - web_admin_bp (Acceso solo Admin)
+  - web_user_bp (Acceso solo Usuario)
+  - web_secretary_bp (Acceso solo Secretaría)
+  - Todas las rutas están integradas en ackend/app/web/.
+- **Seguridad y Funcionalidad**:
+  - Formularios web protegidos globalmente por WTF_CSRF_ENABLED.
+  - Integración de Flask-Login para cookies de sesión con redireccionamiento automático tras login fallido.
+- **Pruebas**: 
+  - 	ests/test_phase5_web.py valida redirecciones, login válido, accesos no autorizados e inyección de sesiones con fixtures de prueba.
+
+**Confirmaciones**:
+- NO se convirtió el frontend a SPA (React/Vue/etc.).
+- Los archivos ZIP de Stitch permanecen ignorados en .gitignore.
+- Se priorizaron elementos funcionales corporativos.
+

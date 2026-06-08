@@ -63,7 +63,7 @@ def create_app(config_object=None):
 
     # Flask-Login — autenticación web con sesiones servidor
     login_manager.init_app(app)
-    login_manager.login_view = "auth_web.login"
+    login_manager.login_view = "auth_web.login_form"
     login_manager.login_message = "Inicia sesión para acceder."
     login_manager.login_message_category = "warning"
 
@@ -71,9 +71,9 @@ def create_app(config_object=None):
     jwt.init_app(app)
 
     # CSRF — protección para formularios Jinja2
-    # Se desactiva en TestConfig para no necesitar tokens en tests de API
-    if app.config.get("WTF_CSRF_ENABLED", True):
-        csrf.init_app(app)
+    # Siempre se inicializa para inyectar csrf_token() en Jinja2.
+    # Flask-WTF respeta WTF_CSRF_ENABLED para saltar validación en tests.
+    csrf.init_app(app)
 
     # CORS — solo para endpoints /api/ consumidos por Android
     CORS(
@@ -227,6 +227,19 @@ def _register_blueprints(app: Flask):
     # ─── Auth — sesión web ────────────────────────────────────────────────
     from app.auth.session_routes import auth_web_bp
     app.register_blueprint(auth_web_bp, url_prefix="/auth")
+    
+    # ─── Vistas Web (Jinja2) ─────────────────────────────────────────────
+    from app.web.admin_routes import web_admin_bp
+    app.register_blueprint(web_admin_bp)
+    
+    from app.web.user_routes import web_user_bp
+    app.register_blueprint(web_user_bp)
+    
+    from app.web.secretary_routes import web_secretary_bp
+    app.register_blueprint(web_secretary_bp)
+
+    from app.web.attendance_routes import web_attendance_bp
+    app.register_blueprint(web_attendance_bp)
 
     # ─── Auth — API JWT para móvil ────────────────────────────────────────
     from app.auth.api_routes import auth_api_bp

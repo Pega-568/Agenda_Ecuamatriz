@@ -1,0 +1,96 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Detalle de Reunión (Secretaría){% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: var(--spacing-6);">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3>{{ meeting.title }}</h3>
+    <span class="badge badge-info">{{ meeting.status | capitalize }}</span>
+  </div>
+  <div class="card-body">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
+      <div>
+        <p><strong>Fecha y Hora:</strong> {{ meeting.date.strftime('%Y-%m-%d') }} {{ meeting.start_time.strftime('%H:%M') }} - {{ meeting.end_time.strftime('%H:%M') }}</p>
+        <p><strong>Sala:</strong> {{ meeting.room.name if meeting.room else 'Virtual' }}</p>
+      </div>
+      <div>
+        <p><strong>Organizador:</strong> {{ meeting.creator.full_name }}</p>
+        <p><strong>Creado el:</strong> {{ meeting.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      </div>
+    </div>
+    {% if meeting.description %}
+    <p style="margin-top: var(--spacing-4);"><strong>Descripción:</strong><br>{{ meeting.description }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Auditoría de Asistencia y Participantes</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Invitación</th>
+            <th>Asistencia</th>
+            <th>Acción Manual</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for participant in meeting.participants %}
+          <tr>
+            <td>{{ participant.user.full_name }}</td>
+            <td>{{ participant.user.email }}</td>
+            <td>
+              {% if participant.invitation_status == 'accepted' %}
+                <span class="badge badge-success">Aceptado</span>
+              {% elif participant.invitation_status == 'pending' %}
+                <span class="badge badge-warning">Pendiente</span>
+              {% elif participant.invitation_status == 'rejected' %}
+                <span class="badge badge-danger">Rechazado</span>
+              {% else %}
+                <span class="badge badge-gray">{{ participant.invitation_status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if participant.attendance_status == 'present' %}
+                <span style="color: var(--color-success);">✔ Presente</span>
+              {% elif participant.attendance_status == 'absent' %}
+                <span style="color: var(--color-danger);">✖ Ausente</span>
+              {% elif participant.attendance_status == 'justified' %}
+                <span style="color: var(--color-info);">Justificado</span>
+              {% else %}
+                <span style="color: var(--color-gray-400);">Sin Marcar</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if participant.attendance_status == 'not_marked' %}
+              <form method="POST" action="{{ url_for('web_secretary.mark_manual_attendance', meeting_id=meeting.id) }}" style="display: flex; gap: 0.5rem; align-items: center;">
+                {{ csrf_token() }}
+                <input type="hidden" name="user_id" value="{{ participant.user_id }}">
+                <select name="status" class="form-control" style="width: auto; padding: 0.2rem;" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="present">Presente</option>
+                  <option value="absent">Ausente</option>
+                  <option value="justified">Justificado</option>
+                </select>
+                <input type="text" name="comment" placeholder="Comentario..." class="form-control" style="width: 120px; padding: 0.2rem;">
+                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+              </form>
+              {% else %}
+                <span style="font-size: 0.8rem; color: var(--color-gray-500);">Marcada: {{ participant.attendance_marked_at.strftime('%H:%M') if participant.attendance_marked_at else '' }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

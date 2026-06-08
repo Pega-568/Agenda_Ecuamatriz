@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Gestión de Salas{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-body">
+    <h3 style="margin-bottom: 1rem;">Nueva Sala</h3>
+    <form method="POST" action="{{ url_for('web_admin.rooms') }}" class="form-group">
+      {{ csrf_token() }}
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <label>Nombre de la Sala</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div>
+          <label>Capacidad (personas)</label>
+          <input type="number" name="capacity" class="form-control" required>
+        </div>
+        <div>
+          <label>Ubicación</label>
+          <input type="text" name="location" class="form-control">
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Crear Sala</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Capacidad</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in rooms %}
+          <tr>
+            <td>{{ room.name }}</td>
+            <td>{{ room.capacity }} personas</td>
+            <td>{{ room.location or 'N/A' }}</td>
+            <td>
+              {% if room.is_active %}
+                <span class="badge badge-success">Activa</span>
+              {% else %}
+                <span class="badge badge-danger">Inactiva</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" style="text-align: center;">No hay salas registradas.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Detalle de Reunión{% endblock %}
+
+{% block page_actions %}
+  {% if meeting.created_by_user_id == current_user.id and meeting.status == 'confirmed' %}
+  <a href="{{ url_for('web_user.qr_display', meeting_id=meeting.id) }}" class="btn btn-primary">
+    Mostrar QR de Asistencia
+  </a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: var(--spacing-6);">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <h3>{{ meeting.title }}</h3>
+    <span class="badge badge-info">{{ meeting.status | capitalize }}</span>
+  </div>
+  <div class="card-body">
+    <p><strong>Fecha y Hora:</strong> {{ meeting.scheduled_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Duración:</strong> {{ meeting.duration_minutes }} minutos</p>
+    <p><strong>Sala:</strong> {{ meeting.room.name if meeting.room else 'N/A' }}</p>
+    <p><strong>Organizador:</strong> {{ meeting.creator.full_name }}</p>
+    {% if meeting.description %}
+    <p><strong>Descripción:</strong><br>{{ meeting.description }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3>Participantes</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol en Reunión</th>
+            <th>Estado de Invitación</th>
+            <th>Asistencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for participant in meeting.participants %}
+          <tr>
+            <td>{{ participant.user.full_name }}</td>
+            <td>{{ participant.user.email }}</td>
+            <td>{{ participant.role }}</td>
+            <td>
+              {% if participant.invitation_status == 'accepted' %}
+                <span class="badge badge-success">Aceptado</span>
+              {% elif participant.invitation_status == 'pending' %}
+                <span class="badge badge-warning">Pendiente</span>
+              {% elif participant.invitation_status == 'rejected' %}
+                <span class="badge badge-danger">Rechazado</span>
+              {% else %}
+                <span class="badge badge-gray">{{ participant.invitation_status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if participant.attended_at %}
+                <span style="color: var(--color-success);">✔ Sí ({{ participant.attended_at.strftime('%H:%M') }})</span>
+              {% else %}
+                <span style="color: var(--color-gray-400);">---</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
