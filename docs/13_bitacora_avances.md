@@ -399,3 +399,14 @@ Implementar diseño limpio basado visualmente en la estructura original de Stitc
 **Próximo paso**:
 - Continuar con Fase 8: Reportes y Actas.
 
+
+### [2026-06-08] — Cierre Formal Fase 7
+
+**Validaciones Realizadas**:
+- Compilación exitosa del proyecto Android en modo Debug.
+- Backend: Migraciones, seeder idempotente y pruebas (58 tests pasando).
+- NetworkConfig.kt añadido para evitar BASE_URL quemada.
+- Flujos validados: Login contra API, Home con reuniones, Registro de Token FCM, Flujo de simulador de QR.
+- Documentación actualizada con endpoints y limitaciones actuales.
+- Se confirmó que Firebase push no está activado en backend (FCM_ENABLED=false) pero registra dispositivo.
+- Quedan pospuestas funcionalidades futuras como Panel móvil y Escaneo QR físico.

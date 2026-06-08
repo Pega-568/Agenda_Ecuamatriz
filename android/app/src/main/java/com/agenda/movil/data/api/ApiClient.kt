@@ -11,9 +11,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    // Para emulador, 10.0.2.2 apunta al localhost de la máquina host.
-    // Para pruebas con dispositivo físico, cambia a la IP de tu red local.
-    private const val BASE_URL = "http://10.0.2.2:5000"
+    // Configuración movida a NetworkConfig.kt
 
     fun create(context: Context): AgendaApiService {
         val authTokenManager = AuthTokenManager(context)
@@ -42,7 +40,7 @@ object ApiClient {
             .build()
 
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(NetworkConfig.BASE_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

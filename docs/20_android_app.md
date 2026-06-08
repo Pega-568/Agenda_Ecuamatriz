@@ -10,17 +10,18 @@
 ## Configuración y Entorno
 
 ### Base URL del Backend
-El endpoint al cual se conecta la app se define en `ApiClient.kt`.
+El endpoint al cual se conecta la app se define de manera centralizada en `NetworkConfig.kt`.
 - **Emulador Local**: Utiliza `http://10.0.2.2:5000` para apuntar al localhost de la máquina de desarrollo.
 - **Dispositivo Físico Local**: Debe configurarse con la IP local de la computadora (ej. `http://192.168.1.XX:5000`) y asegurarse de que tanto el dispositivo como la computadora estén en la misma red Wi-Fi.
+- **Backend Local**: Ejecutar `python run.py --host=0.0.0.0` para que acepte conexiones externas de la red.
 - **Producción**: Reemplazar con el dominio oficial del servidor (ej. `https://api.agenda.ecuamatriz.com`).
 
 ### Configuración de Firebase (`google-services.json`)
 Para que la app pueda recibir notificaciones y utilizar los servicios de Firebase:
 1. Crear un proyecto en la consola de Firebase.
-2. Agregar una aplicación Android con el Application ID `com.agenda.movil`.
+2. Agregar una aplicación Android con el Application ID `com.agenda.movil` (debe coincidir con `namespace` en `build.gradle.kts`).
 3. Descargar el archivo `google-services.json` proporcionado por la consola.
-4. Ubicar el archivo en la ruta `android/app/google-services.json`.
+4. Ubicar el archivo en la ruta exacta `android/app/google-services.json`.
 
 > [!NOTE]
 > Por motivos de seguridad, `google-services.json` está excluido del control de versiones mediante `.gitignore`. Si el repositorio es clonado en un nuevo entorno, será necesario volver a colocar este archivo para poder compilar. Se ha provisto un archivo dummy que permite compilar pero que debe ser reemplazado para conectarse al backend real.
@@ -28,13 +29,52 @@ Para que la app pueda recibir notificaciones y utilizar los servicios de Firebas
 ## Arquitectura y Funcionalidad
 La app sigue una arquitectura moderna dividida por paquetes lógicos:
 - `ui`: Contiene las pantallas (`LoginScreen`, `HomeScreen`, `MeetingDetailScreen`, `QrScannerScreen`) y la configuración de navegación (`Navigation.kt`).
-- `data/api`: Modelos de petición/respuesta (DTOs) y configuración de Retrofit.
+- `data/api`: Modelos de petición/respuesta (DTOs), `NetworkConfig.kt` y configuración de Retrofit.
 - `data/local`: Gestión del almacenamiento de tokens mediante Jetpack DataStore.
 - `theme`: Configuración de la paleta de colores corporativos Ecuamatriz (Primary `#003091`, Secondary `#0057FF`, Accent `#48C9E3`).
 
-## Pruebas y Validación Local
-1. Levantar el backend y base de datos con Docker.
-2. Ejecutar las migraciones y el seeder.
-3. Compilar e instalar la app Android en un emulador o dispositivo físico.
-4. Iniciar sesión usando las credenciales predeterminadas del seeder.
-5. El token será almacenado en DataStore y se adjuntará automáticamente como cabecera `Bearer` en cada petición posterior gracias al interceptor de OkHttp.
+### Endpoints Consumidos
+- `POST /api/auth/login`: Autenticación y obtención de tokens JWT.
+- `POST /api/auth/devices/register`: Registro del token FCM.
+- `GET /api/mobile/meetings/today`: Reuniones del día actual.
+- `GET /api/mobile/meetings/upcoming`: Próximas reuniones confirmadas.
+- `GET /api/mobile/meetings/invitations`: Invitaciones pendientes.
+- `POST /api/mobile/meetings/<id>/accept`: Aceptar invitación.
+- `POST /api/mobile/meetings/<id>/reject`: Rechazar invitación.
+- `GET /api/mobile/meetings/<id>`: Detalle de reunión.
+- `GET /api/mobile/attendance/meeting/<id>/my-status`: Estado de asistencia.
+- `POST /api/mobile/attendance/qr/<token>`: Marcación de asistencia con token QR.
+
+## Pruebas y Compilación
+
+### Levantar el Backend
+1. Levantar Docker Desktop y los servicios de infraestructura:
+   ```bash
+   docker compose up -d
+   docker compose ps
+   ```
+2. Inicializar entorno y BD (en la carpeta `backend`):
+   ```bash
+   $env:FLASK_APP="run.py"
+   flask db upgrade
+   python scripts/seed_all.py
+   python run.py --host=0.0.0.0
+   ```
+
+### Compilar y Ejecutar Android
+1. Desde la carpeta `android`, limpiar y compilar en modo Debug:
+   ```bash
+   ./gradlew clean
+   ./gradlew assembleDebug
+   ```
+   *Nota en Windows PowerShell: `.\gradlew.bat clean` y `.\gradlew.bat assembleDebug`*.
+2. El APK se generará y puede instalarse en el emulador o teléfono.
+
+## Estado Actual (Cierre Fase 7)
+- **FCM**: La app obtiene correctamente el token de FirebaseMessaging y lo registra en el backend. Sin embargo, el envío de notificaciones push está deshabilitado en el backend (`FCM_ENABLED=false` en el seeder), por lo que por el momento se registra pero no se envía push real.
+- **QR / Asistencia**: El lector con cámara nativa no está implementado (pendiente de futura mejora). Actualmente se utiliza un **simulador** en el que se ingresa manualmente el token QR, consumiendo el endpoint real y realizando la lógica completa de asistencia sin necesidad de hardware físico.
+
+## Limitaciones y Pendientes
+- Implementar el escaneo real de códigos QR utilizando la cámara del dispositivo (`CameraX` o `ML Kit`).
+- Implementar lógica completa de expiración y refresh del access token mediante `Authenticator` de OkHttp.
+- Funcionalidades como: **Reportes, Actas, Fichas técnicas, Audio, Transcripción, PDF, Excel y Panel administrativo móvil** no forman parte del alcance de la app base actual y quedan pospuestas.
