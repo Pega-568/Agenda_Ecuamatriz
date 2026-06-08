@@ -39,7 +39,7 @@ class AttendanceToken(db.Model):
     # Ruta relativa al archivo PNG del QR (generado por qrcode)
     qr_image_path = db.Column(db.String(512), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
     meeting = db.relationship("Meeting", back_populates="attendance_token")

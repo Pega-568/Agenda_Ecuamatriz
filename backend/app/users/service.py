@@ -4,7 +4,7 @@ from sqlalchemy import or_
 
 from app import bcrypt, db
 from app.areas.models import Area
-from app.roles.models import Role
+from app.roles.models import Role, RoleSlug
 from app.users.models import User
 
 
@@ -113,14 +113,37 @@ class UserService:
         return user
 
     @staticmethod
-    def search(query: str = "", area_id: int | None = None) -> list[User]:
+    def search(
+        query: str = "",
+        area_id: int | None = None,
+        active_only: bool = False,
+        exclude_admin: bool = False,
+        limit: int | None = None,
+    ) -> list[User]:
         q = User.query
         if query:
             pattern = f"%{query.strip()}%"
             q = q.filter(or_(User.first_name.ilike(pattern), User.last_name.ilike(pattern), User.email.ilike(pattern)))
         if area_id:
             q = q.filter(User.area_id == area_id)
-        return q.order_by(User.first_name.asc(), User.last_name.asc()).all()
+        if active_only:
+            q = q.filter(User.is_active.is_(True))
+        if exclude_admin:
+            q = q.join(Role).filter(Role.slug != RoleSlug.ADMIN)
+        q = q.order_by(User.first_name.asc(), User.last_name.asc())
+        if limit:
+            q = q.limit(limit)
+        return q.all()
+
+    @staticmethod
+    def search_for_meetings(query: str = "", area_id: int | None = None, limit: int = 20) -> list[User]:
+        return UserService.search(
+            query=query,
+            area_id=area_id,
+            active_only=True,
+            exclude_admin=True,
+            limit=limit,
+        )
 
     @staticmethod
     def to_dict(user: User) -> dict:
@@ -137,4 +160,14 @@ class UserService:
             "is_active": user.is_active,
             "created_at": user.created_at.isoformat() if user.created_at else None,
             "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+        }
+
+    @staticmethod
+    def to_search_item(user: User) -> dict:
+        return {
+            "id": user.id,
+            "full_name": user.full_name,
+            "email": user.email,
+            "area": {"id": user.area.id, "name": user.area.name} if user.area else None,
+            "role": user.role.slug if user.role else None,
         }

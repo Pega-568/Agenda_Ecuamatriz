@@ -21,9 +21,9 @@ class Area(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
-        db.DateTime,
+        db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,

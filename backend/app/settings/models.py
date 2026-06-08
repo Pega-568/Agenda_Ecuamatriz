@@ -44,7 +44,7 @@ class SystemSetting(db.Model):
     description = db.Column(db.Text, nullable=True)
 
     updated_at = db.Column(
-        db.DateTime,
+        db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,

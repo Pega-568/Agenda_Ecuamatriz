@@ -1,275 +1,285 @@
 # 04 — Contrato de API
 
-## Convenciones generales
+## Convenciones
 
-### Prefijo base
-Todos los endpoints de la API llevan el prefijo `/api/`.
+Todos los endpoints de API usan prefijo `/api/` y respuestas JSON estándar.
 
-### Autenticación
-```
+Autenticación:
+
+```http
 Authorization: Bearer <access_token>
 ```
-El token JWT se obtiene en `POST /api/auth/login`.
 
-### Formato de respuesta exitosa
+Respuesta exitosa:
+
 ```json
 {
   "success": true,
-  "data": { ... },
-  "message": "Descripción opcional"
+  "data": {}
 }
 ```
 
-### Formato de respuesta paginada
-```json
-{
-  "success": true,
-  "data": [ ... ],
-  "meta": {
-    "total": 50,
-    "page": 1,
-    "per_page": 20,
-    "total_pages": 3
-  }
-}
-```
+Respuesta de error:
 
-### Formato de error
 ```json
 {
   "success": false,
   "error": {
-    "message": "Descripción del error",
-    "code": "ERROR_CODE_OPCIONAL",
-    "details": { ... }
+    "message": "Descripción",
+    "code": "ERROR_CODE",
+    "details": {}
   }
 }
 ```
 
-### Códigos HTTP usados
-
-| Código | Significado                         |
-|--------|-------------------------------------|
-| 200    | OK                                  |
-| 201    | Creado                              |
-| 400    | Error en datos de entrada           |
-| 401    | No autenticado                      |
-| 403    | Sin permisos                        |
-| 404    | Recurso no encontrado               |
-| 409    | Conflicto (duplicado, estado inválido) |
-| 422    | Datos de entrada inválidos (validación) |
-| 500    | Error interno del servidor          |
-| 501    | No implementado (módulo en desarrollo) |
-
----
-
-## Módulo Auth
+## Auth
 
 ### POST /api/auth/login
-```json
-// Request
-{
-  "email": "usuario@ecuamatriz.com",
-  "password": "contraseña"
-}
 
-// Response 200
+```json
 {
-  "success": true,
-  "data": {
-    "access_token": "eyJ...",
-    "refresh_token": "eyJ...",
-    "user": {
-      "id": 1,
-      "full_name": "Juan Pérez",
-      "email": "usuario@ecuamatriz.com",
-      "role": "user"
-    }
-  }
+  "email": "usuario@ecuamatriz.local",
+  "password": "password"
 }
 ```
 
-### POST /api/auth/logout
-```json
-// Headers: Authorization: Bearer <token>
-// Response 200
-{ "success": true, "message": "Sesión cerrada." }
-```
+Devuelve `access_token`, `refresh_token` y datos del usuario.
 
 ### GET /api/auth/me
+
+Requiere JWT. Devuelve el usuario autenticado.
+
+## Usuarios
+
+### GET /api/users/search
+
+Busca usuarios para invitaciones de reunión.
+
+Query params:
+
+| Parámetro | Descripción |
+| --- | --- |
+| `q` | Busca por nombre, correo o área. |
+| `area_id` | Filtra por área. |
+| `limit` | Límite de resultados; default 20. |
+
+Reglas:
+
+- Solo usuarios activos.
+- Excluye rol `admin`.
+
+Respuesta:
+
 ```json
-// Response 200
 {
   "success": true,
   "data": {
-    "id": 1,
-    "full_name": "Juan Pérez",
-    "email": "usuario@ecuamatriz.com",
-    "role": "user",
-    "area": "Tecnología"
-  }
-}
-```
-
----
-
-## Módulo Meetings
-
-### POST /api/meetings/
-```json
-// Request
-{
-  "title": "Revisión de presupuesto Q3",
-  "objective": "Revisar y aprobar el presupuesto del tercer trimestre",
-  "agenda_items": [
-    "Revisión de gastos actuales",
-    "Proyección Q3",
-    "Aprobación de incrementos"
-  ],
-  "description": "Descripción opcional",
-  "date": "2024-07-15",
-  "start_time": "10:00",
-  "end_time": "11:30",
-  "modality": "in_person",
-  "room_id": 1,
-  "participant_ids": [2, 3, 4]
-}
-
-// Response 201
-{
-  "success": true,
-  "data": {
-    "id": 42,
-    "title": "Revisión de presupuesto Q3",
-    "status": "scheduled",
-    ...
-  },
-  "message": "Reunión creada exitosamente."
-}
-```
-
-### POST /api/meetings/<id>/respond
-```json
-// Request
-{
-  "status": "accepted",  // o "rejected"
-  "comment": "No puedo asistir por viaje de trabajo"
-}
-
-// Response 200
-{
-  "success": true,
-  "message": "Respuesta registrada."
-}
-```
-
----
-
-## Módulo Availability
-
-### POST /api/availability/check
-```json
-// Request
-{
-  "date": "2024-07-15",
-  "start_time": "10:00",
-  "end_time": "11:30",
-  "room_id": 1,
-  "user_ids": [2, 3, 4]
-}
-
-// Response 200
-{
-  "success": true,
-  "data": {
-    "date_status": "available",  // available | non_working_day | holiday
-    "room": {
-      "id": 1,
-      "name": "Sala Quito",
-      "status": "available"  // available | occupied
-    },
-    "participants": [
-      { "user_id": 2, "full_name": "Ana García", "status": "available" },
-      { "user_id": 3, "full_name": "Pedro Ruiz", "status": "busy" },
-      { "user_id": 4, "full_name": "María López", "status": "pending" }
-    ],
-    "blocking_issues": [],
-    "warnings": [
-      { "type": "participant_busy", "user_id": 3, "message": "Pedro Ruiz tiene reunión confirmada en ese horario." }
+    "items": [
+      {
+        "id": 2,
+        "full_name": "Juan Pérez",
+        "email": "juan@ecuamatriz.local",
+        "area": {
+          "id": 1,
+          "name": "Producción"
+        },
+        "role": "usuario"
+      }
     ]
   }
 }
 ```
 
----
+## Reuniones
 
-## Módulo Attendance / QR
+### POST /api/meetings/check-availability
 
-### GET /api/attendance/<meeting_id>/qr
+Requiere JWT.
+
 ```json
-// Response 200
+{
+  "date": "2026-06-12",
+  "start_time": "10:00",
+  "end_time": "11:00",
+  "room_id": 1,
+  "participant_ids": [2, 3, 4]
+}
+```
+
+Respuesta:
+
+```json
 {
   "success": true,
   "data": {
-    "meeting_id": 42,
-    "token": "uuid-token-here",
-    "qr_image_url": "/api/attendance/42/qr/image",
-    "valid_from": "2024-07-15T09:45:00",
-    "valid_until": "2024-07-15T12:00:00"
+    "can_create": true,
+    "hard_blocks": [],
+    "warnings": [],
+    "room": {
+      "id": 1,
+      "name": "Sala Principal",
+      "available": true,
+      "conflicts": [],
+      "hard_blocks": [],
+      "warnings": []
+    },
+    "participants": [
+      {
+        "id": 2,
+        "full_name": "Usuario Demo",
+        "status": "available",
+        "conflicts": [],
+        "message": "Disponible.",
+        "hard_block": null
+      }
+    ],
+    "suggested_slots": []
   }
 }
 ```
 
-### POST /api/attendance/scan
+Estados de participante: `available`, `busy`, `pending`, `rejected`, `creator_blocked`, `outside_work_hours`, `non_working_day`.
+
+### POST /api/meetings
+
+Requiere JWT. Admin recibe `403`.
+
 ```json
-// Request
 {
-  "token": "uuid-token-here"
+  "title": "Revisión de avances",
+  "objective": "Revisar avances semanales",
+  "agenda_items": [
+    "Revisión de pendientes",
+    "Problemas encontrados",
+    "Próximos compromisos"
+  ],
+  "description": "Opcional",
+  "date": "2026-06-12",
+  "start_time": "10:00",
+  "end_time": "11:00",
+  "modality": "presencial",
+  "room_id": 1,
+  "virtual_link": null,
+  "participant_ids": [2, 3, 4]
 }
-
-// Response 200
-{
-  "success": true,
-  "message": "Asistencia marcada correctamente.",
-  "data": {
-    "meeting_title": "Revisión de presupuesto Q3",
-    "marked_at": "2024-07-15T10:05:00",
-    "method": "qr"
-  }
-}
-
-// Errores posibles:
-// 403 FORBIDDEN: Usuario no es participante de esta reunión
-// 409 ALREADY_MARKED: Ya marcó asistencia
-// 422 QR_NOT_VALID_YET: Fuera de ventana de validez
-// 422 QR_EXPIRED: Reunión ya terminó (ventana cerrada)
-// 404 MEETING_NOT_FOUND
-// 409 MEETING_CANCELLED
 ```
 
+Respuesta `201`:
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting": {
+      "id": 1,
+      "title": "Revisión de avances",
+      "status": "scheduled",
+      "participants": []
+    },
+    "availability": {}
+  },
+  "message": "Recurso creado exitosamente."
+}
+```
+
+Si hay bloqueos duros: `409 AVAILABILITY_BLOCKED`.
+
+### GET /api/meetings
+
+Requiere JWT.
+
+Filtros:
+
+- `date_from`
+- `date_to`
+- `status`
+- `created_by_me=true`
+- `invited=true`
+- `pending_response=true`
+
+Usuario ve reuniones creadas por él o donde fue invitado. Secretaría tiene vista amplia. Admin recibe `403`.
+
+### GET /api/meetings/<id>
+
+Requiere JWT. Puede ver el creador, invitado o Secretaría. Admin y usuarios ajenos reciben `403`.
+
+### POST /api/meetings/<id>/accept
+
+Requiere JWT. Solo participante invitado. Bloquea si el usuario ya tiene reunión creada o aceptada en ese horario.
+
+Respuesta:
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting_id": 1,
+    "invitation_status": "accepted"
+  }
+}
+```
+
+### POST /api/meetings/<id>/reject
+
+Requiere JWT. Solo participante invitado.
+
+```json
+{
+  "comment": "No podré asistir por cruce de agenda"
+}
+```
+
+Respuesta:
+
+```json
+{
+  "success": true,
+  "data": {
+    "meeting_id": 1,
+    "invitation_status": "rejected"
+  }
+}
+```
+
+### POST /api/meetings/<id>/cancel
+
+Requiere JWT. Solo creador o Secretaría. Admin no opera reuniones.
+
+```json
+{
+  "reason": "Cambio de agenda"
+}
+```
+
+Marca la reunión como `cancelled`, notifica invitados y deja de bloquear disponibilidad.
+
+## Notificaciones
+
+### GET /api/notifications/
+
+Lista notificaciones del usuario autenticado.
+
+### POST /api/notifications/<id>/read
+
+Marca una notificación propia como leída.
+
+## Códigos relevantes de Fase 2
+
+| Código | Descripción |
+| --- | --- |
+| `AVAILABILITY_BLOCKED` | No se puede crear por bloqueos de disponibilidad. |
+| `VALIDATION_ERROR` | Payload inválido por Marshmallow. |
+| `FORBIDDEN` | Rol o usuario sin permiso. |
+| `MEETING_NOT_FOUND` | Reunión inexistente. |
+| `MEETING_ACCEPT_ERROR` | No se pudo aceptar la invitación. |
+| `MEETING_REJECT_ERROR` | No se pudo rechazar la invitación. |
+| `MEETING_CANCEL_ERROR` | No se pudo cancelar la reunión. |
+| `NOTIFICATION_NOT_FOUND` | Notificación inexistente o ajena. |
+
+## Fuera de alcance en Fase 2
+
+Los endpoints de QR, asistencia, fichas técnicas, grabación, transcripción, Android, FCM y WebSocket no se implementan en esta fase.
+
 ---
 
-## Códigos de error internos (campo `code`)
-
-| Código                   | Descripción                                    |
-|--------------------------|------------------------------------------------|
-| `VALIDATION_ERROR`       | Campos de entrada inválidos                    |
-| `INVALID_TOKEN`          | JWT inválido o expirado                        |
-| `USER_NOT_FOUND`         | Usuario no existe                              |
-| `FORBIDDEN`              | Sin permisos para la acción                    |
-| `MEETING_NOT_FOUND`      | Reunión no existe                              |
-| `MEETING_CANCELLED`      | Reunión está cancelada                         |
-| `ROOM_UNAVAILABLE`       | Sala ocupada en ese horario                    |
-| `NON_WORKING_DAY`        | Día no laborable bloqueante                    |
-| `OUTSIDE_HOURS`          | Fuera del horario laboral                      |
-| `MAX_PARTICIPANTS`       | Máximo de participantes excedido               |
-| `MAX_DURATION`           | Duración máxima excedida                       |
-| `NOT_PARTICIPANT`        | Usuario no es participante de la reunión       |
-| `ALREADY_MARKED`         | Asistencia ya fue marcada                      |
-| `QR_NOT_VALID_YET`       | Fuera de ventana de validez (demasiado temprano)|
-| `QR_EXPIRED`             | Fuera de ventana de validez (expirado)         |
-| `SHEET_ALREADY_FINALIZED`| Ficha ya está finalizada                       |
-
----
-
-*Documento de contrato API — Fase 0 — Agenda Ecuamatriz*
+*Documento actualizado en Fase 2 — Agenda Ecuamatriz*

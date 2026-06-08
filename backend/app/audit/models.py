@@ -49,7 +49,7 @@ class AuditLog(db.Model):
 
     # ─── Timestamp ───────────────────────────────────────────────────────────
     created_at = db.Column(
-        db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True
+        db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True
     )
 
     # ─── Relaciones ──────────────────────────────────────────────────────────

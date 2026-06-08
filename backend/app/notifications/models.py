@@ -65,8 +65,8 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False, nullable=False, index=True)
 
     # ─── Timestamps ──────────────────────────────────────────────────────────
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    read_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    read_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
     user = db.relationship(

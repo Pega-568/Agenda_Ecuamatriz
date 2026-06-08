@@ -56,14 +56,14 @@ class TechnicalSheet(db.Model):
     created_by_user_id = db.Column(
         db.Integer, db.ForeignKey("users.id"), nullable=False
     )
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = db.Column(
-        db.DateTime,
+        db.DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    finalized_at = db.Column(db.DateTime, nullable=True)
+    finalized_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     # ─── Futuro (Fase 8) — integración con transcripción ─────────────────
     # generated_from_transcript: bool — Si fue generada desde transcripción

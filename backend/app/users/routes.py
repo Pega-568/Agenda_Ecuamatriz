@@ -95,5 +95,9 @@ def search_users():
     from app.shared.responses import success_response
     from app.users.service import UserService
 
-    users = UserService.search(request.args.get("q", ""), request.args.get("area_id", type=int))
-    return success_response(data=[UserService.to_dict(user) for user in users])
+    users = UserService.search_for_meetings(
+        query=request.args.get("q", ""),
+        area_id=request.args.get("area_id", type=int),
+        limit=request.args.get("limit", default=20, type=int),
+    )
+    return success_response(data={"items": [UserService.to_search_item(user) for user in users]})

@@ -219,5 +219,57 @@
 
 ---
 
+### [2026-06-08] — Fase 2 — Reuniones y disponibilidad integrada
+
+**Qué se hizo**:
+- Creada rama `phase-2/meetings-availability` desde `phase-1/backend-base`.
+- Revisados timestamps y actualizado `db.DateTime(timezone=True)` para campos de sistema/auditoría.
+- Creada migración `b231a19c6a0b_timezone_aware_datetimes_phase_2.py`.
+- Implementado `GET /api/users/search` para búsqueda de invitados activos, excluyendo admin.
+- Implementado servicio de disponibilidad integrada en `app/availability/service.py`.
+- Implementados endpoints de reuniones:
+  - `POST /api/meetings/check-availability`
+  - `POST /api/meetings`
+  - `GET /api/meetings`
+  - `GET /api/meetings/<id>`
+  - `POST /api/meetings/<id>/accept`
+  - `POST /api/meetings/<id>/reject`
+  - `POST /api/meetings/<id>/cancel`
+- Implementado servicio de notificaciones internas y endpoints de polling.
+- Implementado servicio de auditoría para acciones críticas de reunión.
+- Agregados schemas Marshmallow de reuniones y disponibilidad.
+- Agregados tests de Fase 2 contra PostgreSQL Docker.
+
+**Decisiones tomadas**:
+- Timestamps internos timezone-aware con UTC.
+- Fecha/hora de reunión permanecen como `date` + `time`.
+- Creador bloquea agenda desde la creación.
+- Invitados solo bloquean agenda al aceptar.
+- Invitación pendiente o rechazada no bloquea agenda.
+- Reunión cancelada no bloquea disponibilidad.
+- Admin no opera reuniones ni puede ser invitado.
+- `suggested_slots` queda como lista vacía documentada para fase posterior.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: PostgreSQL healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 37 passed.
+- `/health`: HTTP 200.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se copiaron archivos de Stitch.
+- No se implementaron QR, asistencia, fichas técnicas, audio/transcripción, Android ni frontend avanzado.
+
+**Próximo paso — cierre Fase 2**:
+- Revisar diff final.
+- Confirmar higiene Git.
+- Commit y push de `phase-2/meetings-availability`.
+
+---
+
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*
