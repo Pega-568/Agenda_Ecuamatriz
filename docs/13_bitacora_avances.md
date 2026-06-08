@@ -375,3 +375,27 @@ Implementar diseño limpio basado visualmente en la estructura original de Stitc
  -   E n d p o i n t s   m � v i l e s   d e d i c a d o s   ( / a p i / m o b i l e / m e e t i n g s   y   / a p i / m o b i l e / a t t e n d a n c e ) . 
  -   C o r r e c c i � n   d e   p r u e b a s   d e   i n t e g r a c i � n   c o n   P o s t g r e S Q L .  
  
+### Fase 7: Aplicación Android Nativa
+- Creación de proyecto base Android con Jetpack Compose y Kotlin.
+- Configuración de arquitectura Retrofit, OkHttp, DataStore y FCM.
+- Implementación de pantallas: Login, Home, MeetingDetail, QrScanner.
+- Configuración de theme corporativo Ecuamatriz.
+- Verificación de compilación local.
+
+### [2026-06-08] — Fase 7 — App Android Nativa
+
+**Qué se hizo**:
+- Preparación del proyecto Android con Jetpack Compose y Kotlin.
+- Configuración del applicationId como com.agenda.movil.
+- Integración de dependencias de Retrofit, OkHttp, DataStore y Firebase.
+- Implementación de cliente HTTP con interceptor para inyectar token JWT.
+- Almacenamiento local seguro para tokens.
+- Implementación de interfaz visual siguiendo identidad Ecuamatriz.
+- Consumo de API para Login y Refresh.
+- Pantalla de inicio con reuniones e invitaciones.
+- Detalles de reunión, aceptar y rechazar invitaciones.
+- Integración de Firebase Messaging para notificaciones.
+
+**Próximo paso**:
+- Continuar con Fase 8: Reportes y Actas.
+
