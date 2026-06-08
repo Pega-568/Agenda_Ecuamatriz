@@ -281,6 +281,8 @@ Se confirmó el registro de 16 tablas SQLAlchemy:
 
 Fase 0 queda aprobada técnicamente para iniciar Fase 1. Las tareas de migración inicial, seeder y CRUD base siguen perteneciendo a Fase 1 y no fueron ejecutadas como implementación funcional durante este cierre.
 
+Transición ejecutada el 2026-06-08: Fase 1 inició en la rama `phase-1/backend-base` desde `phase-0/bootstrap`.
+
 ---
 
 ## Siguiente paso — Inicio de Fase 1

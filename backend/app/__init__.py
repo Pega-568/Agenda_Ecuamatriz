@@ -47,8 +47,8 @@ def create_app(config_object=None):
     """
     app = Flask(
         __name__,
-        template_folder="../web/templates",
-        static_folder="../web/static",
+        template_folder="../../web/templates",
+        static_folder="../../web/static",
     )
 
     # ─── Configuración ────────────────────────────────────────────────────
@@ -230,66 +230,82 @@ def _register_blueprints(app: Flask):
 
     # ─── Auth — API JWT para móvil ────────────────────────────────────────
     from app.auth.api_routes import auth_api_bp
+    csrf.exempt(auth_api_bp)
     app.register_blueprint(auth_api_bp, url_prefix="/api/auth")
 
     # ─── Users ────────────────────────────────────────────────────────────
     from app.users.routes import users_bp
+    csrf.exempt(users_bp)
     app.register_blueprint(users_bp, url_prefix="/api/users")
 
     # ─── Roles ────────────────────────────────────────────────────────────
     from app.roles.routes import roles_bp
+    csrf.exempt(roles_bp)
     app.register_blueprint(roles_bp, url_prefix="/api/roles")
 
     # ─── Areas ────────────────────────────────────────────────────────────
     from app.areas.routes import areas_bp
+    csrf.exempt(areas_bp)
     app.register_blueprint(areas_bp, url_prefix="/api/areas")
 
     # ─── Rooms ────────────────────────────────────────────────────────────
     from app.rooms.routes import rooms_bp
+    csrf.exempt(rooms_bp)
     app.register_blueprint(rooms_bp, url_prefix="/api/rooms")
 
     # ─── System Settings ──────────────────────────────────────────────────
     from app.settings.routes import settings_bp
+    csrf.exempt(settings_bp)
     app.register_blueprint(settings_bp, url_prefix="/api/settings")
 
     # ─── Work Calendar ────────────────────────────────────────────────────
     from app.calendar.routes import calendar_bp
+    csrf.exempt(calendar_bp)
     app.register_blueprint(calendar_bp, url_prefix="/api/calendar")
 
     # ─── Meetings ─────────────────────────────────────────────────────────
     from app.meetings.routes import meetings_bp
+    csrf.exempt(meetings_bp)
     app.register_blueprint(meetings_bp, url_prefix="/api/meetings")
 
     # ─── Availability ─────────────────────────────────────────────────────
     from app.availability.routes import availability_bp
+    csrf.exempt(availability_bp)
     app.register_blueprint(availability_bp, url_prefix="/api/availability")
 
     # ─── Attendance / QR ──────────────────────────────────────────────────
     from app.attendance.routes import attendance_bp
+    csrf.exempt(attendance_bp)
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
 
     # ─── Notifications ────────────────────────────────────────────────────
     from app.notifications.routes import notifications_bp
+    csrf.exempt(notifications_bp)
     app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
 
     # ─── Technical Sheets ─────────────────────────────────────────────────
     from app.technical_sheets.routes import technical_sheets_bp
+    csrf.exempt(technical_sheets_bp)
     app.register_blueprint(technical_sheets_bp, url_prefix="/api/technical-sheets")
 
     # ─── Reports ──────────────────────────────────────────────────────────
     from app.reports.routes import reports_bp
+    csrf.exempt(reports_bp)
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
 
     # ─── Audit Logs ───────────────────────────────────────────────────────
     from app.audit.routes import audit_bp
+    csrf.exempt(audit_bp)
     app.register_blueprint(audit_bp, url_prefix="/api/audit")
 
     # ─── Recordings (Fase 8 — módulo futuro) ─────────────────────────────
     from app.recordings.routes import recordings_bp
+    csrf.exempt(recordings_bp)
     app.register_blueprint(recordings_bp, url_prefix="/api/recordings")
 
     # ─── Transcriptions (Fase 8 — módulo futuro) ─────────────────────────
     from app.transcriptions.routes import transcriptions_bp
+    csrf.exempt(transcriptions_bp)
     app.register_blueprint(transcriptions_bp, url_prefix="/api/transcriptions")
 
 

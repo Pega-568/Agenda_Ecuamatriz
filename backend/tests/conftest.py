@@ -16,7 +16,7 @@ PREREQUISITO para ejecutar tests:
 Fixtures disponibles:
     - app          : Instancia Flask apuntando a BD de test PostgreSQL
     - client       : Cliente HTTP de prueba
-    - db_session   : Sesión BD con rollback por test (aislamiento)
+    - db_session   : Sesión BD de la app de test
     - admin_user   : Usuario admin de prueba
     - secretary_user: Usuario secretaría de prueba
     - regular_user : Usuario colaborador de prueba
@@ -25,6 +25,7 @@ Fixtures disponibles:
 
 import os
 import pytest
+from types import SimpleNamespace
 from dotenv import load_dotenv
 
 # Cargar .env desde la raíz del proyecto (dos niveles arriba de tests/)
@@ -99,13 +100,12 @@ class TestConfig:
     QR_DEFAULT_VALID_AFTER_MINUTES = 30
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def app():
     """
     Crea la aplicación Flask apuntando a la BD de test PostgreSQL.
 
-    Scope session: la app se crea una sola vez por sesión de tests.
-    La BD se limpia al iniciar y al finalizar.
+    La app se crea por test con base limpia en PostgreSQL.
     """
     test_db_url = _get_test_db_url()
     TestConfig.SQLALCHEMY_DATABASE_URI = test_db_url
@@ -113,18 +113,15 @@ def app():
     flask_app = create_app(TestConfig)
 
     with flask_app.app_context():
-        # Crear todas las tablas en la BD de test
-        # En ambiente real se usa flask db upgrade.
-        # En tests usamos create_all() sobre la BD de test para rapidez.
+        _db.drop_all()
         _db.create_all()
         _seed_test_roles_and_areas()
         yield flask_app
-        # Limpiar al finalizar la sesión
         _db.session.remove()
         _db.drop_all()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def client(app):
     """Cliente HTTP de prueba Flask."""
     return app.test_client()
@@ -133,23 +130,11 @@ def client(app):
 @pytest.fixture(scope="function")
 def db_session(app):
     """
-    Sesión de BD con rollback automático al finalizar cada test.
-    Garantiza aislamiento: cada test trabaja en una transacción que se revierte.
-
-    Nota: Funciona con PostgreSQL. En SQLite el comportamiento puede diferir.
+    Sesión de BD de test. El fixture app recrea las tablas por test.
     """
     with app.app_context():
-        connection = _db.engine.connect()
-        transaction = connection.begin()
-
-        # Configurar la sesión para usar la conexión con transacción abierta
-        _db.session.configure(bind=connection)
-
         yield _db.session
-
         _db.session.remove()
-        transaction.rollback()
-        connection.close()
 
 
 # ─── Datos base de test ──────────────────────────────────────────────────────
@@ -158,7 +143,7 @@ def _seed_test_roles_and_areas():
     """Inserta roles y área de prueba. Idempotente."""
     for slug, name in [
         (RoleSlug.ADMIN, "Administrador"),
-        (RoleSlug.SECRETARY, "Secretaría"),
+        (RoleSlug.SECRETARY, "Secretaria"),
         (RoleSlug.USER, "Usuario"),
     ]:
         if not Role.query.filter_by(slug=slug).first():
@@ -177,8 +162,9 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
     from flask_bcrypt import Bcrypt
     bcrypt = Bcrypt(app)
     with app.app_context():
-        if User.query.filter_by(email=email).first():
-            return User.query.filter_by(email=email).first()
+        existing = User.query.filter_by(email=email).first()
+        if existing:
+            return SimpleNamespace(id=existing.id, email=existing.email)
 
         role = Role.query.filter_by(slug=role_slug).first()
         area = Area.query.filter_by(name=area_name).first() if area_name else None
@@ -194,22 +180,22 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
         )
         _db.session.add(user)
         _db.session.commit()
-        return user
+        return SimpleNamespace(id=user.id, email=user.email)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def admin_user(app):
     """Usuario administrador de prueba."""
     return _create_test_user(app, "admin@test.ecuamatriz.local", RoleSlug.ADMIN, "Admin")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def secretary_user(app):
     """Usuario secretaría de prueba."""
     return _create_test_user(app, "secretaria@test.ecuamatriz.local", RoleSlug.SECRETARY, "Secretaria")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def regular_user(app):
     """Usuario colaborador de prueba."""
     return _create_test_user(
@@ -232,21 +218,21 @@ def _get_jwt_for_user(client, email: str, password: str = "Test1234!") -> str | 
     return None
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def auth_headers_admin(client, admin_user):
     """Headers JWT para admin."""
     token = _get_jwt_for_user(client, admin_user.email)
     return {"Authorization": f"Bearer {token}"} if token else {}
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def auth_headers_secretary(client, secretary_user):
     """Headers JWT para secretaría."""
     token = _get_jwt_for_user(client, secretary_user.email)
     return {"Authorization": f"Bearer {token}"} if token else {}
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def auth_headers_user(client, regular_user):
     """Headers JWT para usuario colaborador."""
     token = _get_jwt_for_user(client, regular_user.email)

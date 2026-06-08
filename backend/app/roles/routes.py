@@ -20,6 +20,8 @@ roles_bp = Blueprint("roles", __name__)
 
 @roles_bp.route("/", methods=["GET"])
 def list_roles():
-    """TODO (Fase 1): Listar roles. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo roles — implementación pendiente (Fase 1).", 501)
+    """Lista roles disponibles."""
+    from app.roles.service import RoleService
+    from app.shared.responses import success_response
+
+    return success_response(data=[RoleService.to_dict(role) for role in RoleService.list_roles()])

@@ -12,41 +12,78 @@ Endpoints:
 Fase de implementación: Fase 1
 """
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 rooms_bp = Blueprint("rooms", __name__)
 
 
 @rooms_bp.route("/", methods=["GET"])
 def list_rooms():
-    """TODO (Fase 1): Listar salas disponibles."""
-    from app.shared.responses import error_response
-    return error_response("Módulo rooms — implementación pendiente (Fase 1).", 501)
+    """Lista salas activas."""
+    from app.rooms.service import RoomService
+    from app.shared.responses import success_response
+
+    return success_response(data=[RoomService.to_dict(room) for room in RoomService.list_active()])
 
 
 @rooms_bp.route("/", methods=["POST"])
 def create_room():
-    """TODO (Fase 1): Crear sala. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo rooms — implementación pendiente (Fase 1).", 501)
+    """Crea sala."""
+    from marshmallow import ValidationError
+    from app.rooms.schemas import RoomSchema
+    from app.rooms.service import RoomService
+    from app.shared.responses import created_response, error_response, validation_error_response
+
+    try:
+        payload = RoomSchema().load(request.get_json(silent=True) or {})
+        room = RoomService.create_room(payload)
+        return created_response(RoomService.to_dict(room))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except (KeyError, ValueError) as exc:
+        return error_response(str(exc), 422, "ROOM_VALIDATION_ERROR")
 
 
 @rooms_bp.route("/<int:room_id>", methods=["GET"])
 def get_room(room_id):
-    """TODO (Fase 1): Detalle de sala."""
-    from app.shared.responses import error_response
-    return error_response("Módulo rooms — implementación pendiente (Fase 1).", 501)
+    """Detalle de sala."""
+    from app import db
+    from app.rooms.models import Room
+    from app.rooms.service import RoomService
+    from app.shared.responses import error_response, success_response
+
+    room = db.session.get(Room, room_id)
+    if not room:
+        return error_response("Sala no encontrada.", 404, "ROOM_NOT_FOUND")
+    return success_response(data=RoomService.to_dict(room))
 
 
 @rooms_bp.route("/<int:room_id>", methods=["PUT"])
 def update_room(room_id):
-    """TODO (Fase 1): Editar sala. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo rooms — implementación pendiente (Fase 1).", 501)
+    """Edita sala."""
+    from marshmallow import ValidationError
+    from app.rooms.schemas import RoomSchema
+    from app.rooms.service import RoomService
+    from app.shared.responses import error_response, success_response, validation_error_response
+
+    try:
+        payload = RoomSchema(partial=True).load(request.get_json(silent=True) or {})
+        room = RoomService.update_room(room_id, payload)
+        return success_response(data=RoomService.to_dict(room))
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except ValueError as exc:
+        return error_response(str(exc), 422, "ROOM_VALIDATION_ERROR")
 
 
 @rooms_bp.route("/<int:room_id>", methods=["DELETE"])
 def delete_room(room_id):
-    """TODO (Fase 1): Eliminar sala. Solo Admin."""
-    from app.shared.responses import error_response
-    return error_response("Módulo rooms — implementación pendiente (Fase 1).", 501)
+    """Desactiva sala."""
+    from app.rooms.service import RoomService
+    from app.shared.responses import error_response, success_response
+
+    try:
+        room = RoomService.set_active(room_id, False)
+        return success_response(data=RoomService.to_dict(room))
+    except ValueError as exc:
+        return error_response(str(exc), 404, "ROOM_NOT_FOUND")

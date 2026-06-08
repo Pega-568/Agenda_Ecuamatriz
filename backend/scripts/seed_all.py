@@ -34,9 +34,12 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 from app import create_app, db
 from app.roles.models import Role, RoleSlug
+from app.roles.service import RoleService
 from app.areas.models import Area
 from app.rooms.models import Room
 from app.settings.models import SystemSetting
+from app.settings.service import SettingsService
+from app.calendar.service import WorkScheduleService
 from app.users.models import User
 
 
@@ -44,43 +47,11 @@ from app.users.models import User
 
 def seed_roles():
     """Inserta los 3 roles del sistema. Idempotente."""
-    roles_data = [
-        {
-            "slug": RoleSlug.ADMIN,
-            "name": "Administrador",
-            "description": (
-                "Rol técnico-operativo. Gestiona usuarios, salas, áreas y "
-                "configuración del sistema. NO participa en reuniones."
-            ),
-        },
-        {
-            "slug": RoleSlug.SECRETARY,
-            "name": "Secretaría",
-            "description": (
-                "Gestiona registros de reuniones, fichas técnicas, reportes y "
-                "calendario institucional. No es cuello de botella para reuniones."
-            ),
-        },
-        {
-            "slug": RoleSlug.USER,
-            "name": "Usuario",
-            "description": (
-                "Colaborador interno. Puede crear reuniones, buscar participantes, "
-                "aceptar/rechazar invitaciones y marcar asistencia por QR."
-            ),
-        },
-    ]
-
-    created = 0
-    for data in roles_data:
-        if not Role.query.filter_by(slug=data["slug"]).first():
-            db.session.add(Role(**data))
-            created += 1
-            print(f"  [+] Rol creado: {data['slug']}")
-        else:
-            print(f"  [=] Rol ya existe: {data['slug']}")
-
-    db.session.commit()
+    before = Role.query.count()
+    roles = RoleService.seed_defaults()
+    created = max(Role.query.count() - before, 0)
+    for role in roles:
+        print(f"  [=] Rol disponible: {role.slug}")
     print(f"  → {created} roles creados.\n")
 
 
@@ -107,7 +78,7 @@ def seed_demo_users():
         },
         {
             "email": "secretaria@ecuamatriz.local",
-            "first_name": "Secretaría",
+            "first_name": "Secretaria",
             "last_name": "Institucional",
             "role_slug": RoleSlug.SECRETARY,
             "position": "Secretaría General",
@@ -167,13 +138,11 @@ def seed_areas():
     """Crea áreas organizacionales base. Idempotente."""
     areas = [
         "Administración",
-        "Gerencia",
         "Producción",
         "Ventas",
         "Sistemas",
         "Talento Humano",
-        "Finanzas",
-        "Legal",
+        "Gerencia",
     ]
 
     created = 0
@@ -233,45 +202,21 @@ def seed_system_settings():
     Parámetros editables por Admin desde el panel sin tocar código.
     Idempotente.
     """
-    defaults = [
-        # (key, value, data_type, description)
-        ("max_participants_per_meeting",        "20",        "int",    "Máximo de participantes por reunión"),
-        ("max_meeting_duration_minutes",        "240",       "int",    "Duración máxima de reunión en minutos"),
-        ("min_advance_hours",                   "1",         "int",    "Horas mínimas de anticipación para crear reunión"),
-        # Horario laboral
-        ("work_start_time",                     "08:00",     "string", "Hora inicio jornada laboral (HH:MM)"),
-        ("work_end_time",                       "17:00",     "string", "Hora fin jornada laboral (HH:MM)"),
-        ("working_days",                        "1,2,3,4,5", "string", "Días laborables: 1=Lun...5=Vie, 6=Sáb, 7=Dom"),
-        # Bloqueos
-        ("allow_meetings_outside_hours",        "false",     "bool",   "Permitir reuniones fuera del horario laboral"),
-        ("allow_meetings_on_non_working_days",  "false",     "bool",   "Permitir reuniones en días no laborables"),
-        # QR
-        ("qr_valid_minutes_before",             "15",        "int",    "Minutos antes del inicio en que el QR es válido"),
-        ("qr_valid_minutes_after",              "30",        "int",    "Minutos después del fin en que el QR sigue válido"),
-        # Asistencia manual
-        ("allow_manual_attendance_secretary",   "true",      "bool",   "Secretaría puede marcar asistencia manualmente"),
-        ("allow_manual_attendance_creator",     "true",      "bool",   "Creador de reunión puede marcar asistencia manualmente"),
-        # Notificaciones
-        ("notifications_enabled",              "true",      "bool",   "Sistema de notificaciones activado"),
-        ("notifications_reminder_minutes",     "30",        "int",    "Minutos antes de la reunión para enviar recordatorio"),
-    ]
-
-    created = 0
-    for key, value, dtype, desc in defaults:
-        if not SystemSetting.query.filter_by(key=key).first():
-            db.session.add(SystemSetting(
-                key=key,
-                value=value,
-                data_type=dtype,
-                description=desc,
-            ))
-            created += 1
-            print(f"  [+] Setting: {key} = {value}")
-        else:
-            print(f"  [=] Setting ya existe: {key}")
-
-    db.session.commit()
+    before = SystemSetting.query.count()
+    settings = SettingsService.seed_defaults()
+    created = max(SystemSetting.query.count() - before, 0)
+    for setting in settings:
+        print(f"  [=] Setting disponible: {setting.key} = {setting.value}")
     print(f"  → {created} configuraciones creadas.\n")
+
+
+def seed_work_schedules():
+    """Crea horario laboral base lunes-viernes 08:00-17:00."""
+    schedules = WorkScheduleService.seed_defaults()
+    for schedule in schedules:
+        state = "laborable" if schedule.is_working_day else "no laborable"
+        print(f"  [=] Día {schedule.weekday}: {state}")
+    print("  → horarios laborales verificados.\n")
 
 
 # ─── Ejecutor principal ───────────────────────────────────────────────────────
@@ -286,27 +231,30 @@ def run_all_seeders():
         print("=" * 62)
         print(f"  BD: {app.config['SQLALCHEMY_DATABASE_URI']}\n")
 
-        print("[1/5] Roles del sistema...")
+        print("[1/6] Roles del sistema...")
         seed_roles()
 
-        print("[2/5] Áreas organizacionales...")
+        print("[2/6] Áreas organizacionales...")
         seed_areas()
 
-        print("[3/5] Salas de reunión...")
+        print("[3/6] Salas de reunión...")
         seed_rooms()
 
-        print("[4/5] Usuarios demo...")
+        print("[4/6] Usuarios demo...")
         seed_demo_users()
 
-        print("[5/5] Configuración del sistema...")
+        print("[5/6] Configuración del sistema...")
         seed_system_settings()
+
+        print("[6/6] Horario laboral...")
+        seed_work_schedules()
 
         print("=" * 62)
         print("  ✓ Seeder completado exitosamente.")
         print("  Usuarios demo:")
         print("    admin@ecuamatriz.local       → rol: admin")
-        print("    secretaria@ecuamatriz.local  → rol: secretary")
-        print("    usuario@ecuamatriz.local     → rol: user")
+        print("    secretaria@ecuamatriz.local  → rol: secretaria")
+        print("    usuario@ecuamatriz.local     → rol: usuario")
         print("  ⚠  CAMBIAR CONTRASEÑAS ANTES DE PRODUCCIÓN.")
         print("=" * 62)
 

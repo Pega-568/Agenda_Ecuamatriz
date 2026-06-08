@@ -7,6 +7,32 @@ from datetime import datetime
 from app import db
 
 
+class WorkSchedule(db.Model):
+    """
+    Horario laboral por día de semana.
+
+    weekday usa ISO: 1=lunes ... 7=domingo.
+    """
+
+    __tablename__ = "work_schedules"
+
+    id = db.Column(db.Integer, primary_key=True)
+    weekday = db.Column(db.Integer, unique=True, nullable=False, index=True)
+    is_working_day = db.Column(db.Boolean, default=True, nullable=False)
+    start_time = db.Column(db.Time, nullable=True)
+    end_time = db.Column(db.Time, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    def __repr__(self) -> str:
+        return f"<WorkSchedule weekday={self.weekday} working={self.is_working_day}>"
+
+
 class WorkCalendarDay(db.Model):
     """
     Día del calendario laboral.

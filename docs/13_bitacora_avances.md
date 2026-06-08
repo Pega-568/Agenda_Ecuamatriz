@@ -188,5 +188,36 @@
 
 ---
 
+### [2026-06-08] — Fase 1 — Backend base funcional
+
+**Qué se hizo**:
+- Creada rama `phase-1/backend-base` desde `phase-0/bootstrap`.
+- Implementados servicios base para `auth`, `roles`, `users`, `areas`, `rooms`, `settings` y `calendar/work schedule`.
+- Agregados schemas Marshmallow para validación de entradas en usuarios, áreas, salas, settings y horario laboral.
+- Implementado login web con Flask-Login, logout y dashboard mínimo.
+- Preparado login API JWT mínimo y `/api/auth/me`, separado del login web.
+- Agregado modelo `WorkSchedule` para horario laboral semanal.
+- Inicializado Flask-Migrate/Alembic y creada migración inicial `9f7c5986fbf4_initial_schema_phase_1.py`.
+- Actualizado `scripts/seed_all.py` para crear datos base de Fase 1 de forma idempotente.
+- Agregados tests de Fase 1 contra PostgreSQL Docker.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: `agenda_ecuamatriz_db` healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 24 passed, 149 warnings por `datetime.utcnow()`.
+- `/health`: `{"app":"Agenda Ecuamatriz","database":"ok","status":"ok"}`.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker mediante `TEST_DATABASE_URL`.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se implementaron reuniones, QR, asistencia, fichas técnicas, Android ni frontend avanzado.
+
+**Próximo paso — Fase 2**:
+- Implementar flujo de reuniones, disponibilidad y reglas de agenda sobre la base ya migrada y testeada.
+
+---
+
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*

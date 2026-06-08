@@ -36,6 +36,16 @@ class AuthService:
             User si las credenciales son válidas y el usuario está activo.
             None si son inválidas o el usuario está desactivado.
 
-        TODO (Fase 1): Implementar consulta a BD + bcrypt.check_password_hash()
+        Implementa consulta a BD + bcrypt.check_password_hash().
         """
-        raise NotImplementedError("AuthService.authenticate — implementar en Fase 1")
+        if not email or not password:
+            return None
+
+        from app.users.service import UserService
+
+        user = UserService.get_by_email(email)
+        if not user or not user.is_active:
+            return None
+        if not UserService.check_password(user, password):
+            return None
+        return user

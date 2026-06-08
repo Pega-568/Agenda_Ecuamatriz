@@ -21,9 +21,12 @@ Fase de implementación: Fase 7 (Android)
 Fase 1 puede implementar /login y /me para pruebas de API aunque la app Android no esté.
 """
 
-from flask import Blueprint
+from flask import Blueprint, request
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from app import csrf
 
 auth_api_bp = Blueprint("auth_api", __name__)
+csrf.exempt(auth_api_bp)
 
 
 @auth_api_bp.route("/login", methods=["POST"])
@@ -36,10 +39,24 @@ def api_login():
     Body: { "email": "...", "password": "..." }
     Response: { "success": true, "data": { "access_token": "...", "refresh_token": "...", "user": {...} } }
 
-    TODO (Fase 1): Implementar AuthService.authenticate() + create_access_token()
+    Implementado en Fase 1 para pruebas de API, separado del login web.
     """
-    from app.shared.responses import error_response
-    return error_response("API login JWT — implementación pendiente (Fase 1).", 501)
+    from app.auth.service import AuthService
+    from app.shared.responses import error_response, success_response
+    from app.users.service import UserService
+
+    payload = request.get_json(silent=True) or {}
+    user = AuthService.authenticate(payload.get("email", ""), payload.get("password", ""))
+    if not user:
+        return error_response("Credenciales inválidas o usuario inactivo.", 401, "INVALID_CREDENTIALS")
+    identity = str(user.id)
+    return success_response(
+        data={
+            "access_token": create_access_token(identity=identity),
+            "refresh_token": create_refresh_token(identity=identity),
+            "user": UserService.to_dict(user),
+        }
+    )
 
 
 @auth_api_bp.route("/logout", methods=["POST"])
@@ -67,12 +84,18 @@ def api_refresh():
 
 
 @auth_api_bp.route("/me", methods=["GET"])
+@jwt_required()
 def api_me():
     """
     GET /api/auth/me
     Retorna datos del usuario autenticado (JWT).
 
-    TODO (Fase 1): Implementar con @jwt_required()
+    Implementado en Fase 1.
     """
-    from app.shared.responses import error_response
-    return error_response("API me JWT — implementación pendiente (Fase 1).", 501)
+    from app.shared.responses import error_response, success_response
+    from app.users.service import UserService
+
+    user = UserService.get_by_id(get_jwt_identity())
+    if not user:
+        return error_response("Usuario no encontrado.", 404, "USER_NOT_FOUND")
+    return success_response(data=UserService.to_dict(user))
