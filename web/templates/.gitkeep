@@ -1,0 +1,10 @@
+# web/templates/.gitkeep
+# Directorio para plantillas Jinja2 organizadas por rol/módulo.
+# Estructura esperada en Fase 3:
+#   templates/
+#     base/           — layout base por rol (admin, secretary, user)
+#     auth/           — login
+#     user/           — dashboard, nueva_reunion, mis_reuniones, invitaciones
+#     secretary/      — dashboard, registros, fichas, calendario, reportes
+#     admin/          — dashboard, usuarios, areas, salas, settings
+#     shared/         — componentes comunes (navbar, notificaciones, etc.)

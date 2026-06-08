@@ -1,0 +1,192 @@
+# 13 — Bitácora de Avances
+
+## Formato de entrada
+
+```
+### [YYYY-MM-DD] — Fase X — Descripción del avance
+- Qué se hizo
+- Decisiones tomadas
+- Problemas encontrados
+- Próximo paso
+```
+
+---
+
+## Entradas
+
+---
+
+### [2026-06-07] — Fase 0 — Estructura inicial del proyecto
+
+**Qué se hizo**:
+- Reinicio completo del proyecto desde cero.
+- Creada la estructura de carpetas completa del proyecto.
+- Creado `.gitignore` para Python/Flask/Android/Node.
+- Creado `.env.example` sin secretos.
+- Creado `README.md` con descripción completa del sistema.
+- Creada la Application Factory de Flask con todos los blueprints registrados.
+- Creados los `__init__.py` de los 17 módulos del backend con su docstring de responsabilidades.
+- Creados los `routes.py` de todos los módulos con stubs documentados y indicación de fase.
+- Creados los modelos SQLAlchemy de todas las entidades:
+  - User, Role, Area, Room, SystemSetting
+  - WorkCalendarDay, InstitutionalEvent
+  - Meeting, MeetingParticipant
+  - AttendanceToken
+  - Notification
+  - TechnicalSheet
+  - AuditLog
+  - MeetingRecording, MeetingTranscript, TechnicalSheetDraft (Fase 8)
+- Creado `app/shared/responses.py` con funciones de respuesta estandarizadas.
+- Creado `app/shared/decorators.py` con decoradores de autorización por rol.
+- Creado `tests/conftest.py` con fixtures de pytest.
+- Creado `tests/test_health.py` con tests de sanidad.
+- Creado `scripts/seed_all.py` con seeder idempotente.
+- Creados los 14 documentos de `docs/` (00 a 13).
+
+**Decisiones tomadas**:
+- **No usar SPA en primera versión.** Se usa Flask + Jinja2 para mayor control y simplicidad.
+- **QR fijo** (no rotativo) en primera versión. Más simple, suficiente para el contexto.
+- **JWT** como mecanismo de autenticación (no sesiones Flask).
+- **Marshmallow** para validación y serialización (no Pydantic).
+- **Un solo flujo de reunión.** No tipos de reunión.
+- **Secretaría no es cuello de botella.** No aprueba reuniones.
+- **Admin no participa en reuniones.** Rol técnico puro.
+- **Módulos recordings y transcriptions** creados como stubs para no bloquear Fase 8.
+- **SQLite en tests**, PostgreSQL en desarrollo y producción.
+
+**Herramientas elegidas**:
+- `qrcode[pil]` para generación de QR (Python).
+- `openpyxl` para exportación Excel.
+- `firebase-admin` para FCM (notificaciones push Android).
+- `pytest + pytest-flask` para tests.
+- `flask-migrate + alembic` para migraciones.
+
+**Próximo paso**:
+- **Fase 1**: Implementar backend base.
+  - Crear la migración inicial (`flask db migrate -m "initial schema"`).
+  - Implementar `auth` (login web y API JWT).
+  - Implementar `users` (CRUD + búsqueda).
+  - Implementar `areas`, `rooms`, `settings`.
+  - Ejecutar seeder y verificar.
+  - Escribir tests de cada módulo.
+
+---
+
+### [2026-06-08] — Fase 0 — Revisión y ajuste de cierre
+
+**Qué se hizo**:
+- Auditoría técnica completa antes de cerrar Fase 0.
+- Corrección de decisiones preliminares que hubieran generado deuda.
+
+**Decisiones definitivas tomadas**:
+
+**Autenticación — dos canales:**
+- **Web (Jinja2)**: Flask-Login con sesiones de servidor y cookies seguras.
+  Blueprint `auth_web_bp` en `session_routes.py` → `/auth/`
+- **API móvil (Android)**: JWT con Flask-JWT-Extended.
+  Blueprint `auth_api_bp` en `api_routes.py` → `/api/auth/`
+- Regla: la web NUNCA usa JWT. La API NUNCA usa sesiones Flask.
+- Ambos blueprints comparten `AuthService.authenticate()`.
+
+**Base de datos:**
+- PostgreSQL Docker desde el inicio, incluyendo tests.
+- SQLite eliminado completamente del proyecto.
+- Driver cambiado: `psycopg2-binary` → `psycopg[binary]` (v3).
+- BD desarrollo: `agenda_ecuamatriz`. BD test: `agenda_ecuamatriz_test`.
+
+**Infraestructura:**
+- Creado `docker-compose.yml` con `postgres:16-alpine` + healthcheck + volumen persistente.
+- Creado `docker/postgres/init.sql` que crea la BD de test automáticamente.
+
+**User model:**
+- Actualizado para implementar `flask_login.UserMixin`.
+- `get_id()` explícito. `is_active` hace override al de UserMixin.
+
+**Tests:**
+- `conftest.py` reescrito: PostgreSQL obligatorio, falla con mensaje claro si detecta SQLite.
+- Fixture `db_session` con rollback por test para aislamiento.
+- Fixture `secretary_user` añadida (faltaba).
+- `test_health.py` actualizado para verificar `/health`, `auth_web_bp` y `auth_api_bp`.
+- `pytest.ini` creado.
+
+**Seeder:**
+- Orden corregido: roles → áreas → salas → usuarios → settings.
+- 3 usuarios demo con emails `.local`.
+- Áreas actualizadas: Administración, Gerencia, Producción, Ventas, Sistemas, Talento Humano, Finanzas, Legal.
+- Salas: Sala Principal, Sala Reuniones 1, Sala Reuniones 2.
+- Setting `notifications_enabled` añadido.
+
+**Documentación:**
+- Creado `docs/14_revision_fase_0.md` con decisiones, checklist y próximos pasos.
+- `.env.example` actualizado con nuevas variables.
+- `requirements.txt` actualizado.
+
+**Archivos creados/modificados en esta revisión**:
+- `docker-compose.yml` (nuevo)
+- `docker/postgres/init.sql` (nuevo)
+- `.env.example` (actualizado)
+- `backend/requirements.txt` (actualizado)
+- `backend/app/__init__.py` (actualizado — Flask-Login, CSRF, /health)
+- `backend/app/users/models.py` (actualizado — UserMixin)
+- `backend/app/auth/session_routes.py` (nuevo)
+- `backend/app/auth/api_routes.py` (nuevo)
+- `backend/app/auth/service.py` (nuevo — stub)
+- `backend/app/auth/routes.py` (convertido en doc)
+- `backend/tests/conftest.py` (reescrito — PostgreSQL)
+- `backend/tests/test_health.py` (actualizado)
+- `backend/pytest.ini` (nuevo)
+- `backend/scripts/seed_all.py` (actualizado)
+- `docs/14_revision_fase_0.md` (nuevo)
+- `.gitignore` (actualizado — docker, tests/tmp)
+
+**Problemas encontrados**: Ninguno crítico. Los cambios son preventivos.
+
+**Próximo paso — Fase 1**:
+1. `docker compose up -d`
+2. Crear `venv`, instalar `requirements.txt`
+3. Configurar `.env`
+4. `flask db init` + `flask db migrate -m "initial schema"` + `flask db upgrade`
+5. `python scripts/seed_all.py`
+6. Implementar `auth/service.py` → `session_routes.py` → `api_routes.py`
+7. Implementar `users/`, `areas/`, `rooms/`, `settings/`
+8. Escribir tests. Ejecutar `pytest`.
+
+---
+
+### [2026-06-08] — Fase 0 — Bootstrap Git y estabilización final
+
+**Qué se hizo**:
+- Inicializado repositorio Git local en `D:\Agenda_Ecuamatriz`.
+- Configurada rama principal `main`.
+- Configurado remoto `origin` hacia `https://github.com/Pega-568/Agenda_Ecuamatriz.git`.
+- Creada rama de trabajo `phase-0/bootstrap`.
+- Endurecido `.gitignore` para excluir explícitamente `stitch_*.zip`, `*.html`, `.env`, `venv/`, `__pycache__/`, `.pytest_cache/`, `node_modules/`, `dist/`, `build/`, APK y bases SQLite/DB.
+- Corregido el error ORM que impedía ejecutar pytest:
+  - `backend/app/__init__.py` ahora registra/importa todos los modelos antes de migraciones/tests.
+  - `AuditLog.metadata` se renombró a atributo Python `metadata_json`, conservando la columna `"metadata"`.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: `agenda_ecuamatriz_db` healthy.
+- `SELECT 1` en `agenda_ecuamatriz`: OK.
+- `SELECT 1` en `agenda_ecuamatriz_test`: OK.
+- `pytest`: 6 passed, 2 warnings de deprecación por `datetime.utcnow()`.
+- `/health`: `{"app":"Agenda Ecuamatriz","database":"ok","status":"ok"}`.
+
+**Confirmaciones**:
+- `pytest` usa PostgreSQL Docker mediante `TEST_DATABASE_URL`.
+- No usa SQLite.
+- No hay error de imports ORM.
+- No existe `.env` real.
+- No se detectaron secretos reales.
+- Los ZIP de Stitch permanecen en filesystem, pero quedan fuera de Git por `.gitignore`.
+- No se implementaron funcionalidades de Fase 1.
+
+**Próximo paso**:
+- Hacer commit `Bootstrap clean Agenda Ecuamatriz phase 0`.
+- Hacer push de `phase-0/bootstrap` al remoto.
+- No hacer merge a `main` todavía.
+
+---
+
+*Bitácora de avances — Agenda Ecuamatriz*
+*(Actualizar esta sección al finalizar cada fase o avance significativo)*

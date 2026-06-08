@@ -1,0 +1,3 @@
+# web/static/.gitkeep
+# Directorio para archivos estáticos: CSS, JS, imágenes.
+# Se pobla en Fase 3 (Web Usuario).

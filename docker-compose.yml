@@ -1,0 +1,46 @@
+# ============================================================
+# docker-compose.yml — Agenda Ecuamatriz
+# ============================================================
+# Servicios de infraestructura local para desarrollo.
+# NO incluye el servidor Flask (se ejecuta directamente con python run.py).
+#
+# Uso:
+#   docker compose up -d          → levantar servicios en background
+#   docker compose down           → detener y eliminar contenedores
+#   docker compose down -v        → también elimina volúmenes (borra datos)
+#   docker compose ps             → ver estado de servicios
+#   docker compose logs postgres  → ver logs de PostgreSQL
+# ============================================================
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: agenda_ecuamatriz_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: agenda_ecuamatriz
+      POSTGRES_USER: agenda_user
+      POSTGRES_PASSWORD: agenda_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Script de inicialización: crea la BD de test automáticamente
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agenda_user -d agenda_ecuamatriz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ─── Volúmenes persistentes ──────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    name: agenda_ecuamatriz_postgres_data

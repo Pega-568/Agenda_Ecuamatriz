@@ -1,0 +1,88 @@
+# ============================================================
+# requirements.txt — Agenda Ecuamatriz Backend
+# ============================================================
+# Dependencias Python para el backend Flask.
+# Versiones fijadas para reproducibilidad.
+# Actualizar solo con revisión técnica y actualización de tests.
+#
+# Última revisión: Cierre Fase 0
+# Decisiones:
+#   - Web usa Flask-Login (sesiones servidor), NO JWT
+#   - API móvil futura usa Flask-JWT-Extended
+#   - Driver BD: psycopg (v3), NO psycopg2-binary
+#   - Tests sobre PostgreSQL real (Docker), NO SQLite
+# ============================================================
+
+# ─── Framework Web ──────────────────────────────────────────
+Flask==3.0.3
+Werkzeug==3.0.3
+
+# ─── Base de datos ──────────────────────────────────────────
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.31
+# psycopg (v3) — driver moderno para PostgreSQL
+# Requiere PostgreSQL 12+. Usar psycopg[binary] para binarios precompilados.
+psycopg[binary]==3.1.19
+
+# ─── Migraciones ────────────────────────────────────────────
+Flask-Migrate==4.0.7
+alembic==1.13.2
+
+# ─── Autenticación WEB — Flask-Login (sesiones servidor) ────
+# Usado para la interfaz web Jinja2.
+# NO usar JWT en la web principal.
+Flask-Login==0.6.3
+
+# ─── Protección CSRF (formularios Jinja2) ───────────────────
+Flask-WTF==1.2.1
+
+# ─── Autenticación API MÓVIL — JWT (Android, Fase 7+) ───────
+# Usado para los endpoints /api/ que consume la app Android.
+# NO mezclar con Flask-Login en las mismas vistas.
+Flask-JWT-Extended==4.6.0
+
+# ─── Validación y serialización ─────────────────────────────
+marshmallow==3.21.3
+marshmallow-sqlalchemy==1.1.0
+
+# ─── Variables de entorno ───────────────────────────────────
+python-dotenv==1.0.1
+
+# ─── CORS (solo para endpoints /api/) ───────────────────────
+# La web Jinja2 no necesita CORS (mismo origen).
+Flask-CORS==4.0.1
+
+# ─── Generación QR ──────────────────────────────────────────
+qrcode[pil]==7.4.2
+Pillow==10.4.0
+
+# ─── Exportación Excel ──────────────────────────────────────
+openpyxl==3.1.5
+
+# ─── Notificaciones email ───────────────────────────────────
+Flask-Mail==0.10.0
+
+# ─── Firebase Cloud Messaging (push Android, Fase 7) ────────
+# Activar cuando se configure FCM. Comentado hasta Fase 7 si se prefiere.
+firebase-admin==6.5.0
+
+# ─── Seguridad y hashing de contraseñas ─────────────────────
+bcrypt==4.1.3
+Flask-Bcrypt==1.0.1
+
+# ─── Testing ────────────────────────────────────────────────
+# Tests sobre PostgreSQL Docker, NO SQLite.
+pytest==8.2.2
+pytest-flask==1.3.0
+pytest-cov==5.0.0
+factory-boy==3.3.0
+Faker==25.9.1
+
+# ─── Utilidades ─────────────────────────────────────────────
+python-dateutil==2.9.0.post0
+
+# ─── Módulos futuros (Fase 8) — NO instalar hasta recibir código externo ─────
+# Descomentar SOLO cuando el módulo de grabación/transcripción esté listo.
+# pydub==0.25.1
+# openai==1.35.0
+# google-cloud-speech==2.26.0
