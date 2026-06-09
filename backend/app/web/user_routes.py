@@ -123,7 +123,7 @@ def qr_display(meeting_id):
         result = AttendanceService.generate_or_get_attendance_token(meeting.id, current_user)
         
         qr_image_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={result['qr_payload']}"
-        return render_template("user/qr_display.html", meeting=meeting, qr_image_url=qr_image_url, valid_until=result['valid_until'])
+        return render_template("user/qr_display.html", meeting=meeting, qr_image_url=qr_image_url, valid_until=result['valid_until'], qr_payload=result['qr_payload'])
     except Exception as e:
         flash(f"Error al generar QR: {str(e)}", "danger")
         return redirect(url_for("web_user.meeting_detail", meeting_id=meeting_id))

@@ -87,6 +87,31 @@ def test_web_create_meeting(client, regular_user, admin_user, db_session):
     assert response.status_code == 200
     assert b'Reuni\xc3\xb3n creada exitosamente.' in response.data or b'Reunion Web Test' in response.data or b'Error de disponibilidad' in response.data
 
+def test_web_create_meeting_without_participants(client, regular_user, db_session):
+    """Prueba que no se puede crear una reunión sin participantes."""
+    user = regular_user
+    
+    client.post('/auth/login', data={
+        'email': user.email,
+        'password': 'Test1234!'
+    }, follow_redirects=True)
+    
+    response = client.post('/user/meetings/create', data={
+        'title': 'Reunion Web Test No Participants',
+        'date': '2030-10-10',
+        'start_time': '10:00',
+        'end_time': '11:00',
+        'room_id': '',
+        'objective': 'Test Obj',
+        'agenda_items': 'Item 1, Item 2',
+        'description': 'Test description',
+        # No participant_ids provided
+        'modality': 'virtual'
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200
+    assert b'Debe seleccionar al menos un participante' in response.data
+
 def test_web_mark_manual_attendance(client, secretary_user, db_session):
     """Prueba que la secretaría puede marcar asistencia manual."""
     sec = secretary_user
