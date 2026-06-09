@@ -2,6 +2,23 @@ package com.agenda.movil.data.model
 
 import com.google.gson.annotations.SerializedName
 
+data class ApiResponse<T>(
+    val success: Boolean,
+    val message: String?,
+    val data: T?,
+    val error: ErrorDetail?
+)
+
+data class ErrorDetail(
+    val message: String,
+    val code: String?
+)
+
+data class LoginRequest(
+    val email: String,
+    val password: String
+)
+
 data class LoginResponse(
     @SerializedName("access_token") val accessToken: String,
     @SerializedName("refresh_token") val refreshToken: String,

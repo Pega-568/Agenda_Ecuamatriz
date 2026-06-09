@@ -20,10 +20,10 @@ class AgendaFirebaseMessagingService : FirebaseMessagingService() {
             try {
                 val request = DeviceRegisterRequest(deviceToken = token)
                 val response = apiService.registerDevice(request)
-                if (response.isSuccessful) {
+                if (response.isSuccessful && response.body()?.success == true) {
                     Log.d("FCM", "Token successfully registered on backend")
                 } else {
-                    Log.e("FCM", "Failed to register token: ${response.code()}")
+                    Log.e("FCM", "Failed to register token: ${response.code()} - ${response.errorBody()?.string() ?: response.message()}")
                 }
             } catch (e: Exception) {
                 Log.e("FCM", "Error registering token", e)

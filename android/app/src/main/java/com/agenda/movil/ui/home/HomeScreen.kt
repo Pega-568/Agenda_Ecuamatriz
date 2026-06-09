@@ -44,7 +44,7 @@ fun HomeScreen(
                 else -> api.getMeetingsToday()
             }
             if (response.isSuccessful) {
-                meetings = response.body() ?: emptyList()
+                meetings = response.body()?.data ?: emptyList()
             }
         } catch (e: Exception) {
             meetings = emptyList()

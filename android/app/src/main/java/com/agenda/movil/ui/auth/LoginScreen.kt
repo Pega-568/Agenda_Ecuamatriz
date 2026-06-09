@@ -70,16 +70,28 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     coroutineScope.launch {
                         try {
                             val api = ApiClient.create(context)
-                            val response = api.login(email, password)
-                            if (response.isSuccessful && response.body() != null) {
-                                val body = response.body()!!
-                                AuthTokenManager(context).saveTokens(body.accessToken, body.refreshToken)
+                            val response = api.login(com.agenda.movil.data.model.LoginRequest(email, password))
+                            if (response.isSuccessful && response.body()?.success == true && response.body()?.data != null) {
+                                val data = response.body()!!.data!!
+                                AuthTokenManager(context).saveTokens(data.accessToken, data.refreshToken)
                                 onLoginSuccess()
                             } else {
-                                errorMessage = "Credenciales incorrectas"
+                                val code = response.code()
+                                val errorStr = response.errorBody()?.string() ?: response.message()
+                                val parsedError = try {
+                                    if (errorStr.contains("message")) {
+                                        // Simple regex or substring to find message, or use Gson if available
+                                        errorStr
+                                    } else {
+                                        errorStr
+                                    }
+                                } catch (e: Exception) { errorStr }
+                                errorMessage = "Fallo (HTTP $code): $parsedError"
                             }
+                        } catch (e: java.io.IOException) {
+                            errorMessage = "Error de red: verifica tu conexión e IP."
                         } catch (e: Exception) {
-                            errorMessage = "Error de conexión"
+                            errorMessage = "Error de parsing o interno: ${e.message}"
                         } finally {
                             isLoading = false
                         }

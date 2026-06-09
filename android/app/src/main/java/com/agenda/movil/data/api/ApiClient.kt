@@ -61,10 +61,11 @@ object ApiClient {
                     val bodyString = refreshResponse.body?.string()
                     if (!bodyString.isNullOrEmpty()) {
                         val jsonObject = JSONObject(bodyString)
-                        val newAccessToken = jsonObject.getString("access_token")
+                        val dataObject = if (jsonObject.has("data")) jsonObject.getJSONObject("data") else jsonObject
+                        val newAccessToken = dataObject.getString("access_token")
                         // En backend de Flask, puede o no venir el refresh_token de vuelta.
                         // Asumimos que si no viene, reusamos el mismo.
-                        val newRefreshToken = if (jsonObject.has("refresh_token")) jsonObject.getString("refresh_token") else refreshToken
+                        val newRefreshToken = if (dataObject.has("refresh_token")) dataObject.getString("refresh_token") else refreshToken
                         
                         runBlocking { authTokenManager.saveTokens(newAccessToken, newRefreshToken) }
                         

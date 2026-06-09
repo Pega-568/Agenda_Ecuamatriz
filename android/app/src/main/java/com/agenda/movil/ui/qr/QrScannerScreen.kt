@@ -125,7 +125,7 @@ fun QrScannerScreen(onBack: () -> Unit, onScanSuccess: (String) -> Unit) {
             coroutineScope.launch {
                 try {
                     val response = ApiClient.create(context).markAttendanceQR(token)
-                    if (response.isSuccessful) {
+                    if (response.isSuccessful && response.body()?.success == true) {
                         resultMessage = "¡Asistencia registrada correctamente!"
                     } else {
                         val errorBody = response.errorBody()?.string()

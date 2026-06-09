@@ -29,7 +29,7 @@ fun MeetingDetailScreen(meetingId: Int, onBack: () -> Unit) {
         try {
             val response = ApiClient.create(context).getMeetingDetail(meetingId)
             if (response.isSuccessful) {
-                meeting = response.body()
+                meeting = response.body()?.data
             }
         } finally {
             isLoading = false
@@ -89,7 +89,7 @@ fun MeetingDetailScreen(meetingId: Int, onBack: () -> Unit) {
                     Button(onClick = {
                         coroutineScope.launch {
                             val response = ApiClient.create(context).acceptInvitation(meetingId)
-                            if (response.isSuccessful) onBack() else actionError = "Error al aceptar"
+                            if (response.isSuccessful && response.body()?.success == true) onBack() else actionError = "Error al aceptar"
                         }
                     }) {
                         Text("Aceptar")
@@ -126,7 +126,7 @@ fun MeetingDetailScreen(meetingId: Int, onBack: () -> Unit) {
                                 val response = ApiClient.create(context).rejectInvitation(
                                     meetingId, ActionRequest(comment = rejectComment)
                                 )
-                                if (response.isSuccessful) {
+                                if (response.isSuccessful && response.body()?.success == true) {
                                     showRejectDialog = false
                                     onBack()
                                 } else {

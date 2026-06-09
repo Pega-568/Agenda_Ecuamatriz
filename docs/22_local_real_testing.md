@@ -1,62 +1,72 @@
-# 22 — Despliegue Local y Pruebas Reales
+# Pruebas Reales Locales (Fase 9 - Estabilización Piloto)
 
-Este documento registra los comandos, configuraciones y resultados del despliegue en red local para pruebas reales de la aplicación Android interactuando con el backend.
+Esta bitácora documenta las pruebas reales de conectividad entre el backend levantado localmente y la aplicación de Android instalada en un dispositivo físico.
 
-## Configuración y Entorno
+## Contexto de la Red
 
-- **IP Local usada (LAN)**: `192.168.0.139`
-- **Comando para levantar Docker**: `docker compose up -d`
-- **Comando para preparar base de datos y correr tests**: 
-  ```bash
-  flask db upgrade
-  python scripts/seed_all.py
-  python -m pytest
-  ```
-- **Comando para levantar Flask en toda la red local**:
-  ```bash
-  python run.py --host=0.0.0.0 --port=5000
-  ```
-- **URL Web Local desde laptop**: `http://127.0.0.1:5000` o `http://192.168.0.139:5000`
-- **BASE_URL usada en Android**: `http://192.168.0.139:5000/`
-- **Permiso HTTP en Android**: `android:usesCleartextTraffic="true"` habilitado en `AndroidManifest.xml`.
-- **Ruta del APK generada**: `android/app/build/outputs/apk/debug/app-debug.apk`
+- **IP Local usada:** `192.168.0.139` (Asignada a la laptop ejecutando Flask)
+- **Puerto:** `5000`
+- **Condiciones:** Dispositivo móvil y laptop en la misma red Wi-Fi, sin proxy ni túneles como ngrok o Cloudflare.
 
-*(Nota: En este entorno de prueba controlado estrictamente bajo red local **NO** se usaron servicios externos como Cloudflare Tunnel o ngrok)*.
+## Credenciales Demo Usadas (Seed)
 
-## Resultados de Compilación y Backend
-- **pytest**: OK (Pruebas unitarias completas aprobadas).
-- **assembleDebug**: OK (Build exitoso tras inyectar la IP local en NetworkConfig).
+Las credenciales reales sembradas por `seed_all.py` para realizar las pruebas de login son:
 
-## Plan de Pruebas UAT en Dispositivos
+- **Rol Administrador:**
+  - Email: `admin@ecuamatriz.com`
+  - Password: `Test1234!`
+- **Rol Secretaría:**
+  - Email: `secretaria@ecuamatriz.com`
+  - Password: `Test1234!`
+- **Rol Usuario (Recomendado para la App Móvil):**
+  - Email: `usuario1@ecuamatriz.com`
+  - Password: `Test1234!`
 
-A continuación, la lista de validaciones que deben ejecutarse manualmente:
+## Resultado de Prueba de Login Externa (HTTP Client)
 
-### Navegador del Teléfono
-- [ ] Entrar a `http://192.168.0.139:5000/health` y recibir un mensaje de sistema activo. Esto valida que la laptop y el móvil están en la misma red sin bloqueos de firewall.
-- [ ] Entrar a `http://192.168.0.139:5000/` y comprobar la renderización del login web responsive.
+Se ejecutó un login manual mediante HTTP Client apuntando a `http://192.168.0.139:5000/api/auth/login`.
 
-### Aplicación Android (app-debug.apk)
-- [ ] Instalación correcta permitiendo orígenes desconocidos.
-- [ ] **Login**: Conexión al backend local confirmada tras inicio de sesión exitoso.
-- [ ] **Dashboard de Reuniones**: Carga de pestaña "Hoy" y "Próximas" con datos servidos por PostgreSQL local.
-- [ ] **Invitaciones**: Recepción de invitaciones (en la pestaña de invitaciones).
-- [ ] **Acciones de Invitación**: Aceptar o rechazar, verificando actualización inmediata.
-- [ ] **FCM Token**: Registro exitoso del token en la base de datos local al hacer login (en modo silence ya que FCM_ENABLED=false).
-- [ ] **QR Escáner**: Prueba de `CameraX` capturando un código y consumiendo `http://192.168.0.139:5000/api/mobile/attendance/qr/...`.
-- [ ] **Modo Manual**: Funcionamiento correcto al tipear URL/Token si se carece de QR.
-- [ ] **Refresh JWT**: Deslogueo forzado con mensaje de caducidad superada, o renovación imperceptible en el background.
+- **Cuerpo de la petición:**
+```json
+{
+  "email": "usuario1@ecuamatriz.com",
+  "password": "Test1234!"
+}
+```
+- **Respuesta esperada y validada:**
+```json
+{
+  "success": true,
+  "data": {
+    "access_token": "eyJhbGci...",
+    "refresh_token": "eyJhbGci...",
+    "user": {
+      "id": 3,
+      "email": "usuario1@ecuamatriz.com",
+      "first_name": "Usuario",
+      "last_name": "Demo 1",
+      "role": "usuario"
+    }
+  }
+}
+```
 
-### Web (Admin/Secretaría/Usuario)
-- [ ] **Login Web**: OK.
-- [ ] **Roles Restringidos**: Admin sin acceso a creación de reuniones; Usuario sin acceso al portal Admin.
-- [ ] **Creación de Reunión**: OK.
-- [ ] **Consulta y Generación QR**: Generado dinámicamente desde el detalle de la reunión.
-- [ ] **Asistencia Manual**: Ingreso manual habilitado para secretaría si la configuración local lo permite.
+## Problema Detectado en Login Android
 
-## Ajustes y Correcciones Post-Prueba (Fase 9.1)
-- **Token CSRF**: Se corrigió el problema visual en los formularios de la interfaz Admin donde el token CSRF se mostraba como texto en lugar de inyectarse como un campo `<input type="hidden">`.
-- **Navegación Sidebar**: Se corrigió el archivo `sidebar.html` asegurando que las URLs redirijan correctamente mediante `url_for` en lugar de anclas muertas (`href="#"`). Se corrigió el mapeo de roles ("secretaria" y "usuario" en lugar de sus versiones en inglés).
-- **Conectividad Firewall**: Si la app de Android arroja un error de conexión, se documentó que es necesario abrir el puerto `5000` (TCP de entrada) en el Firewall local de Windows.
-- **Flujo de Reunión (Web)**: Se reemplazaron atributos erróneos de fecha (`scheduled_at`) por los reales del modelo (`date`, `start_time`, `end_time`). También se mejoró la UX de la creación de reuniones reemplazando la entrada manual de IDs por checkboxes generados con los usuarios activos de la base de datos.
-- **Detalles y QR**: Se limpió de la vista web atributos inexistentes (`duration_minutes`, `attended_at`, `role`), se ajustaron los labels de estado a los valores reales y se actualizó la lógica de generación de QR para invalidar el token anterior y siempre retornar un payload válido al recargar la página.
-- **MobileDeviceToken**: Para no interferir con las migraciones estables previas al piloto, se decidió conservar el esquema actual (solo `user_id` y `fcm_token`) y desestimar `platform`/`device_name`/`app_version` en la fase de piloto.
+Al analizar el código Android se encontró el motivo por el cual el login fallaba internamente en la aplicación:
+
+### Causas encontradas:
+1. **Formato de Petición:** El backend (`/api/auth/login`) esperaba recibir los datos del login como un Payload JSON (`@Body request: LoginRequest`), pero Android estaba usando Retrofit con el modificador `@FormUrlEncoded` y enviando `email` y `password` como form-data.
+2. **Parsing de Respuesta:** El backend envolvía la respuesta exitosa bajo un modelo uniforme `{"success": true, "data": {...}}`. Sin embargo, Android intentaba deserializar directamente los atributos de `LoginResponse` (es decir, `access_token`, `refresh_token`, y `user`) asumiendo que estaban en la raíz del JSON, resultando en nulos o crash interno por parsing.
+
+### Correcciones aplicadas:
+- Se implementó un contenedor estandarizado **`ApiResponse<T>`** en los modelos de Retrofit de Android para mapear correctamente las respuestas anidadas dentro del objeto `data`.
+- Se reemplazó `@FormUrlEncoded` por `@Body request: LoginRequest` en el endpoint `login` del `AgendaApiService.kt`.
+- Se aplicó esta corrección en todos los endpoints que usan Retrofit (`getMeetingsToday()`, `acceptInvitation()`, `markAttendanceQR()`, etc.), asegurando coherencia en el parseo global.
+- Se mejoró sustancialmente el manejo de excepciones en `LoginScreen.kt`, diferenciando entre errores de parsing, código de estado HTTP o excepciones de I/O de red para ofrecer retroalimentación útil en pantalla.
+
+## Resultados Finales
+
+- La aplicación Android ahora procesa exitosamente el inicio de sesión.
+- Navegación asegurada en Home, visualizando los listados correctos protegidos con JWT.
+- Renovación y validación de tokens corregidos gracias al envoltorio `ApiResponse<T>`.
