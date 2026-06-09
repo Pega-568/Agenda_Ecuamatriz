@@ -429,3 +429,20 @@ Implementar diseño limpio basado visualmente en la estructura original de Stitc
 **Próximo paso**:
 - Pasar a siguientes fases (Reportes, Actas u optimizaciones).
 
+
+### [2026-06-09] — Fase 9 — Piloto y Estabilización
+
+**Qué se hizo**:
+- Creada rama \phase-9/stabilization-pilot\.
+- Validada la integridad y limpieza de las exclusiones del proyecto (\.env\, json de firebase, tokens en logs).
+- Verificada la idempotencia del comando de siembra (\seed_all.py\).
+- Confirmado que las pruebas del backend alcanzan el 100% (58 tests) en el entorno de pruebas con PostgreSQL.
+- Verificado el build exitoso de la aplicación Android (\ssembleDebug\).
+- Creado el documento \21_stabilization_pilot.md\ con instrucciones detalladas de UAT y configuraciones de red incluyendo el uso de \
+grok\ para pilotos remotos.
+- Actualizado el archivo de configuración en Android (\NetworkConfig.kt\) con la documentación sobre cómo apuntar localmente y a ngrok.
+
+**Próximo paso**:
+- Entrega del piloto para UAT (Pruebas de Aceptación de Usuario) manual.
+- Futuras fases (Reportes, Fichas técnicas, Panel móvil) quedan bajo reserva y planificación posterior.
+
