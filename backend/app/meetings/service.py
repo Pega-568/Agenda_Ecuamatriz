@@ -203,8 +203,8 @@ class MeetingService:
         return MeetingParticipant.query.filter_by(meeting_id=meeting.id, user_id=user.id).first() is not None
 
     @staticmethod
-    def to_dict(meeting: Meeting) -> dict:
-        return {
+    def to_dict(meeting: Meeting, current_user: User | None = None) -> dict:
+        base_dict = {
             "id": meeting.id,
             "title": meeting.title,
             "objective": meeting.objective,
@@ -233,6 +233,23 @@ class MeetingService:
                 for participant in meeting.participants
             ],
         }
+        
+        if current_user:
+            role_in_meeting = "creator" if meeting.created_by_user_id == current_user.id else "participant"
+            participant_info = next((p for p in meeting.participants if p.user_id == current_user.id), None)
+            
+            my_invitation_status = participant_info.invitation_status if participant_info else None
+            my_attendance_status = participant_info.attendance_status if participant_info else None
+            
+            base_dict["role_in_meeting"] = role_in_meeting
+            base_dict["my_invitation_status"] = my_invitation_status
+            base_dict["my_attendance_status"] = my_attendance_status
+            
+            base_dict["can_accept"] = bool(role_in_meeting == "participant" and my_invitation_status == InvitationStatus.PENDING)
+            base_dict["can_reject"] = bool(role_in_meeting == "participant" and my_invitation_status == InvitationStatus.PENDING)
+            base_dict["can_show_qr"] = bool(role_in_meeting == "creator" and meeting.status == MeetingStatus.SCHEDULED)
+            
+        return base_dict
 
     @staticmethod
     def _get_participation(meeting_id: int, user_id: int) -> tuple[Meeting, MeetingParticipant]:

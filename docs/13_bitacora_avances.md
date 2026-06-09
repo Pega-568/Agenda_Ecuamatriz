@@ -489,8 +489,21 @@ grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de
 - Corregida la creaciÃ³n de reuniones en web para no pedir IDs por consola, ahora muestra checkboxes con los usuarios activos de la base de datos.
 
 - Limpiados atributos de vista inexistentes en meeting_detail.html y ajustados los estados de badges a los correctos.
-- Corregida la creaciÃ³n de usuarios desde admin para separar nombres desde un Ãºnico input de full_name.
-- Mejorada la lÃ³gica de AttendanceService para regenerar el token QR en caso de recargas web y garantizar despliegue.
-- Eliminada la escalada de privilegios inadvertida de la SecretarÃ­a para aceptar o rechazar reuniones desde los endpoints de participantes.
-- Agregados y reforzados tests de UI para verificar la renderizaciÃ³n de perfiles de usuario y reuniÃ³n.
+- Corregida la creación de usuarios desde admin para separar nombres desde un único input de full_name.
+- Mejorada la lógica de AttendanceService para regenerar el token QR en caso de recargas web y garantizar despliegue.
+- Eliminada la escalada de privilegios inadvertida de la Secretaría para aceptar o rechazar reuniones desde los endpoints de participantes.
+- Agregados y reforzados tests de UI para verificar la renderización de perfiles de usuario y reunión.
+
+### [2026-06-09] — Correcciones de Integración Android-Web-Backend (Fase 9.2)
+
+**Qué se hizo**:
+- Añadido soporte dinámico en `MeetingService.to_dict` (al inyectar `current_user`) para que devuelva estados contextuales a la app móvil: `role_in_meeting`, `my_invitation_status`, `my_attendance_status`, `can_accept`, `can_reject`, `can_show_qr`.
+- Corregido el manejo de excepciones en `mobile_attendance_bp` para el escaneo de QR. Ahora devuelve explícitamente un código HTTP `400 Bad Request` en caso de errores controlados (`ValueError`) en lugar de `409 Conflict` y mantiene un formato estándar JSON `{"success": false, "error": "mensaje"}`.
+- Reparada la llamada a la función correcta de asistencia (`AttendanceService.mark_by_qr`) en lugar de la inexistente `mark_qr` que provocaba un volcado `500 Internal Server Error`.
+- Reforzada la extracción de mensajes de error de JSON en Android (`QrScannerScreen.kt`) para buscar adecuadamente dentro del objeto `"error" : { "message": "..." }`.
+- Ampliados los DTO en Android (`MeetingResponse.kt`) para abarcar los estados de usuario contextual.
+- Habilitados los botones de *Aceptar* y *Rechazar* en la vista `MeetingDetailScreen.kt` de Android que consumen los endpoints respectivos de `AgendaApiService`.
+- Agregados los tests automatizados para certificar los flujos de invitaciones aceptadas, invitaciones rechazadas y validaciones de errores de escaneo QR.
+
+**Estado Actual**: Listo y desplegable. Tests 100% pasando y Android APK recompilado con éxito.
 

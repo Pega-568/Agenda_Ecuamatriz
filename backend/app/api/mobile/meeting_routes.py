@@ -21,7 +21,7 @@ def get_today_meetings():
         user = _current_user()
         filters = {"date_from": date.today(), "date_to": date.today()}
         meetings = MeetingService.list_for_user(user, filters, mobile_context=True)
-        return success_response(data=[MeetingService.to_dict(m) for m in meetings])
+        return success_response(data=[MeetingService.to_dict(m, current_user=user) for m in meetings])
     except PermissionError as e:
         return error_response(str(e), 403)
 
@@ -33,7 +33,7 @@ def get_upcoming_meetings():
         user = _current_user()
         filters = {"date_from": date.today() + timedelta(days=1)}
         meetings = MeetingService.list_for_user(user, filters, mobile_context=True)
-        return success_response(data=[MeetingService.to_dict(m) for m in meetings])
+        return success_response(data=[MeetingService.to_dict(m, current_user=user) for m in meetings])
     except PermissionError as e:
         return error_response(str(e), 403)
 
@@ -45,7 +45,7 @@ def get_invitations():
         user = _current_user()
         filters = {"invited": True, "pending_response": True, "date_from": date.today()}
         meetings = MeetingService.list_for_user(user, filters, mobile_context=True)
-        return success_response(data=[MeetingService.to_dict(m) for m in meetings])
+        return success_response(data=[MeetingService.to_dict(m, current_user=user) for m in meetings])
     except PermissionError as e:
         return error_response(str(e), 403)
 
@@ -57,7 +57,7 @@ def get_unified_agenda():
         user = _current_user()
         filters = {"date_from": date.today()}
         meetings = MeetingService.list_for_user(user, filters, mobile_context=True)
-        return success_response(data=[MeetingService.to_dict(m) for m in meetings])
+        return success_response(data=[MeetingService.to_dict(m, current_user=user) for m in meetings])
     except PermissionError as e:
         return error_response(str(e), 403)
 
@@ -121,7 +121,7 @@ def create_meeting():
         if conflicts and conflicts.get("hard_blocks"):
              return error_response("Error de disponibilidad: la sala o un participante están ocupados.", 409)
              
-        return success_response(data={"meeting": MeetingService.to_dict(meeting)}, message="Reunión creada correctamente.")
+        return success_response(data={"meeting": MeetingService.to_dict(meeting, current_user=user)}, message="Reunión creada correctamente.")
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -132,8 +132,9 @@ def create_meeting():
 def get_meeting_detail(meeting_id):
     """GET /api/mobile/meetings/<id>"""
     try:
-        meeting = MeetingService.get_detail(meeting_id, _current_user())
-        return success_response(data=MeetingService.to_dict(meeting))
+        user = _current_user()
+        meeting = MeetingService.get_detail(meeting_id, user)
+        return success_response(data=MeetingService.to_dict(meeting, current_user=user))
     except PermissionError as e:
         return error_response(str(e), 403)
     except ValueError as e:

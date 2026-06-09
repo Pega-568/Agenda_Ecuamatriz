@@ -54,8 +54,12 @@ data class MeetingResponse(
     val modality: String,
     val status: String,
     val room: Room?,
-    @SerializedName("invitation_status") val invitationStatus: String?,
-    @SerializedName("attendance_status") val attendanceStatus: String?
+    @SerializedName("role_in_meeting") val roleInMeeting: String?,
+    @SerializedName("my_invitation_status") val myInvitationStatus: String?,
+    @SerializedName("my_attendance_status") val myAttendanceStatus: String?,
+    @SerializedName("can_accept") val canAccept: Boolean?,
+    @SerializedName("can_reject") val canReject: Boolean?,
+    @SerializedName("can_show_qr") val canShowQr: Boolean?
 )
 
 data class Room(

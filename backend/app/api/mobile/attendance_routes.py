@@ -17,7 +17,7 @@ def _current_user():
 def mark_attendance_qr(token):
     """POST /api/mobile/attendance/qr/<token>"""
     try:
-        participant = AttendanceService.mark_qr(token, _current_user())
+        participant = AttendanceService.mark_by_qr(token, _current_user())
         return success_response(
             message="Asistencia marcada con éxito.",
             data=AttendanceService.participant_to_dict(participant)
@@ -25,7 +25,7 @@ def mark_attendance_qr(token):
     except PermissionError as e:
         return error_response(str(e), 403)
     except ValueError as e:
-        return error_response(str(e), 409)
+        return error_response(str(e), 400)
 
 @mobile_attendance_bp.route("/meeting/<int:meeting_id>/my-status", methods=["GET"])
 @jwt_required()
