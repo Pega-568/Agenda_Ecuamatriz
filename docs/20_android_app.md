@@ -70,11 +70,10 @@ La app sigue una arquitectura moderna dividida por paquetes lógicos:
    *Nota en Windows PowerShell: `.\gradlew.bat clean` y `.\gradlew.bat assembleDebug`*.
 2. El APK se generará y puede instalarse en el emulador o teléfono.
 
-## Estado Actual (Cierre Fase 7)
+## Estado Actual (Cierre Fase 8 - Endurecimiento)
 - **FCM**: La app obtiene correctamente el token de FirebaseMessaging y lo registra en el backend. Sin embargo, el envío de notificaciones push está deshabilitado en el backend (`FCM_ENABLED=false` en el seeder), por lo que por el momento se registra pero no se envía push real.
-- **QR / Asistencia**: El lector con cámara nativa no está implementado (pendiente de futura mejora). Actualmente se utiliza un **simulador** en el que se ingresa manualmente el token QR, consumiendo el endpoint real y realizando la lógica completa de asistencia sin necesidad de hardware físico.
+- **Autenticación y Sesión**: Implementada la renovación automática de tokens JWT (`refresh_token`) usando `OkHttp Authenticator`. Si el token expira y la renovación falla, la aplicación cierra la sesión automáticamente, limpia las preferencias y redirige a la pantalla de Login con un mensaje claro al usuario.
+- **QR / Asistencia**: Se ha implementado de forma nativa el escaneo de códigos QR usando `CameraX` y `ML Kit Barcode Scanning`. El usuario puede escanear el QR directamente o introducir la URL/token de forma manual a través de una opción secundaria de (Debug/Manual). El código maneja el ciclo completo y muestra alertas en caso de fallo, éxito o sesiones expiradas.
 
 ## Limitaciones y Pendientes
-- Implementar el escaneo real de códigos QR utilizando la cámara del dispositivo (`CameraX` o `ML Kit`).
-- Implementar lógica completa de expiración y refresh del access token mediante `Authenticator` de OkHttp.
 - Funcionalidades como: **Reportes, Actas, Fichas técnicas, Audio, Transcripción, PDF, Excel y Panel administrativo móvil** no forman parte del alcance de la app base actual y quedan pospuestas.

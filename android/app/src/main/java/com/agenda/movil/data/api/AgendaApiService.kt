@@ -14,7 +14,7 @@ interface AgendaApiService {
     ): Response<LoginResponse>
 
     @POST("/api/auth/refresh")
-    suspend fun refresh(): Response<RefreshResponse>
+    suspend fun refresh(@Header("Authorization") refreshToken: String): Response<RefreshResponse>
 
     @POST("/api/auth/logout")
     suspend fun logout(): Response<GenericResponse>

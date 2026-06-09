@@ -6,6 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import com.agenda.movil.data.local.AuthTokenManager
 import com.agenda.movil.ui.auth.LoginScreen
 import com.agenda.movil.ui.home.HomeScreen
 import com.agenda.movil.ui.meeting.MeetingDetailScreen
@@ -26,6 +30,16 @@ fun AgendaNavGraph(
     navController: NavHostController = rememberNavController(),
     startDestination: String = NavRoutes.LOGIN
 ) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        AuthTokenManager.sessionExpiredFlow.collect {
+            Toast.makeText(context, "Tu sesión expiró. Inicia sesión nuevamente.", Toast.LENGTH_LONG).show()
+            navController.navigate(NavRoutes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,

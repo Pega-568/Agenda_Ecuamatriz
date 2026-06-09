@@ -410,3 +410,22 @@ Implementar diseño limpio basado visualmente en la estructura original de Stitc
 - Documentación actualizada con endpoints y limitaciones actuales.
 - Se confirmó que Firebase push no está activado en backend (FCM_ENABLED=false) pero registra dispositivo.
 - Quedan pospuestas funcionalidades futuras como Panel móvil y Escaneo QR físico.
+
+### [2026-06-09] — Fase 8 — Endurecimiento Android
+
+**Qué se hizo**:
+- Implementado flujo de renovación automática de tokens JWT usando `OkHttp Authenticator`.
+- Agregado control de expiración de sesión que limpia preferencias y redirige a la pantalla de Login con estado limpio si el refresh token expira.
+- Implementado el escaneo nativo de códigos QR usando `CameraX` y `ML Kit Barcode Scanning`.
+- Actualizado el flujo de `QrScannerScreen` para solicitar permisos de cámara en tiempo de ejecución y procesar tokens QR reales.
+- Agregada extracción de tokens a partir de URLs y mantenido un modo manual/debug como alternativa secundaria.
+- Tests del backend validados exitosamente tras sembrar datos y migraciones (58 passed).
+- Build Android `assembleDebug` verificado.
+
+**Decisiones de Diseño**:
+- El Authenticator bloquea `/api/auth/refresh` de bucles infinitos y realiza la petición `POST` en hilo sincrónico limpio para renovar la sesión de forma transparente.
+- Las dependencias de Android (camerax, mlkit, guava) se agruparon en el catálogo de versiones de Gradle.
+
+**Próximo paso**:
+- Pasar a siguientes fases (Reportes, Actas u optimizaciones).
+

@@ -94,4 +94,13 @@ dependencies {
   // Firebase
   implementation(platform(libs.firebase.bom))
   implementation(libs.firebase.messaging)
+
+  // CameraX
+  implementation(libs.androidx.camera.camera2)
+  implementation(libs.androidx.camera.lifecycle)
+  implementation(libs.androidx.camera.view)
+
+  // ML Kit
+  implementation(libs.mlkit.barcode.scanning)
+  implementation(libs.guava)
 }

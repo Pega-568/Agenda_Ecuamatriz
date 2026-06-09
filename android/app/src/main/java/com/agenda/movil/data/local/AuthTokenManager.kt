@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -16,6 +18,9 @@ class AuthTokenManager(private val context: Context) {
     companion object {
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("ACCESS_TOKEN")
         private val REFRESH_TOKEN_KEY = stringPreferencesKey("REFRESH_TOKEN")
+        
+        private val _sessionExpiredFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+        val sessionExpiredFlow = _sessionExpiredFlow.asSharedFlow()
     }
 
     val accessToken: Flow<String?> = context.dataStore.data.map { preferences ->
@@ -38,5 +43,9 @@ class AuthTokenManager(private val context: Context) {
             preferences.remove(ACCESS_TOKEN_KEY)
             preferences.remove(REFRESH_TOKEN_KEY)
         }
+    }
+
+    suspend fun emitSessionExpired() {
+        _sessionExpiredFlow.emit(Unit)
     }
 }
