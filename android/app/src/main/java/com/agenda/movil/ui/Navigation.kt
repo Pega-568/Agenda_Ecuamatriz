@@ -20,6 +20,7 @@ object NavRoutes {
     const val HOME = "home"
     const val MEETING_DETAIL = "meeting_detail/{id}"
     const val QR_SCANNER = "qr_scanner"
+    const val NEW_MEETING = "new_meeting"
 
     fun meetingDetail(id: Int) = "meeting_detail/$id"
 }
@@ -66,6 +67,9 @@ fun AgendaNavGraph(
                 },
                 onNavigateToQrScanner = {
                     navController.navigate(NavRoutes.QR_SCANNER)
+                },
+                onNavigateToNewMeeting = {
+                    navController.navigate(NavRoutes.NEW_MEETING)
                 }
             )
         }
@@ -82,6 +86,14 @@ fun AgendaNavGraph(
                 onBack = { navController.popBackStack() },
                 onScanSuccess = { token ->
                     // Logic to handle token scan
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(NavRoutes.NEW_MEETING) {
+            com.agenda.movil.ui.meeting.NewMeetingScreen(
+                onBack = { navController.popBackStack() },
+                onMeetingCreated = {
                     navController.popBackStack()
                 }
             )

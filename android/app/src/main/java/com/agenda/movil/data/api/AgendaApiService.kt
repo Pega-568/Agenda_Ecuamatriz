@@ -23,6 +23,15 @@ interface AgendaApiService {
     @POST("/api/auth/devices/unregister")
     suspend fun unregisterDevice(@Body request: DeviceRegisterRequest): Response<ApiResponse<GenericResponse>>
 
+    @GET("/api/mobile/meetings")
+    suspend fun getMeetings(): Response<ApiResponse<List<MeetingResponse>>>
+
+    @GET("/api/mobile/meetings/options")
+    suspend fun getMeetingOptions(): Response<ApiResponse<MeetingOptionsResponse>>
+
+    @POST("/api/mobile/meetings")
+    suspend fun createMeeting(@Body request: CreateMeetingRequest): Response<ApiResponse<GenericResponse>>
+
     @GET("/api/mobile/meetings/today")
     suspend fun getMeetingsToday(): Response<ApiResponse<List<MeetingResponse>>>
 

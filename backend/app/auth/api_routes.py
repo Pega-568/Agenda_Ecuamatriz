@@ -49,6 +49,11 @@ def api_login():
     user = AuthService.authenticate(payload.get("email", ""), payload.get("password", ""))
     if not user:
         return error_response("Credenciales inválidas o usuario inactivo.", 401, "INVALID_CREDENTIALS")
+        
+    from app.roles.models import RoleSlug
+    if user.role.slug == RoleSlug.ADMIN:
+        return error_response("El rol Administrador debe usar el panel web administrativo.", 403, "FORBIDDEN_ROLE")
+        
     identity = str(user.id)
     return success_response(
         data={

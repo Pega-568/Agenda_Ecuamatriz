@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.agenda.movil.data.api.ApiClient
 import com.agenda.movil.data.local.AuthTokenManager
 import com.agenda.movil.data.model.MeetingResponse
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,7 +26,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     onNavigateToDetail: (Int) -> Unit,
     onLogout: () -> Unit,
-    onNavigateToQrScanner: () -> Unit
+    onNavigateToQrScanner: () -> Unit,
+    onNavigateToNewMeeting: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -31,25 +35,28 @@ fun HomeScreen(
     var meetings by remember { mutableStateOf<List<MeetingResponse>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    val tabs = listOf("Hoy", "Próximas", "Invitaciones")
+    val tabs = listOf("Agenda", "Invitaciones")
 
+    // Polling effect every 15 seconds
     LaunchedEffect(selectedTabIndex) {
         isLoading = true
-        try {
-            val api = ApiClient.create(context)
-            val response = when (selectedTabIndex) {
-                0 -> api.getMeetingsToday()
-                1 -> api.getMeetingsUpcoming()
-                2 -> api.getInvitations()
-                else -> api.getMeetingsToday()
+        while (isActive) {
+            try {
+                val api = ApiClient.create(context)
+                val response = when (selectedTabIndex) {
+                    0 -> api.getMeetings()
+                    1 -> api.getInvitations()
+                    else -> api.getMeetings()
+                }
+                if (response.isSuccessful) {
+                    meetings = response.body()?.data ?: emptyList()
+                }
+            } catch (e: Exception) {
+                // Keep old data or empty on error
+            } finally {
+                isLoading = false
             }
-            if (response.isSuccessful) {
-                meetings = response.body()?.data ?: emptyList()
-            }
-        } catch (e: Exception) {
-            meetings = emptyList()
-        } finally {
-            isLoading = false
+            delay(15000)
         }
     }
 
@@ -72,7 +79,7 @@ fun HomeScreen(
                             onLogout()
                         }
                     }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Cerrar sesión")
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Cerrar sesión")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -81,10 +88,15 @@ fun HomeScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigateToNewMeeting) {
+                Icon(Icons.Default.Add, contentDescription = "Nueva Reunión")
+            }
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding)) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
+            PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
@@ -94,13 +106,13 @@ fun HomeScreen(
                 }
             }
 
-            if (isLoading) {
+            if (isLoading && meetings.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             } else if (meetings.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No hay reuniones")
+                    Text("No tienes reuniones programadas.")
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {

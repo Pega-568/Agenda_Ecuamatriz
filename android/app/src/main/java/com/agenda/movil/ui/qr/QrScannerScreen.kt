@@ -130,7 +130,14 @@ fun QrScannerScreen(onBack: () -> Unit, onScanSuccess: (String) -> Unit) {
                     } else {
                         val errorBody = response.errorBody()?.string()
                         val msg = try {
-                            JSONObject(errorBody ?: "").getString("error")
+                            val jsonObj = JSONObject(errorBody ?: "")
+                            if (jsonObj.has("error") && jsonObj.get("error") is JSONObject) {
+                                jsonObj.getJSONObject("error").getString("message")
+                            } else if (jsonObj.has("error")) {
+                                jsonObj.getString("error")
+                            } else {
+                                "Código HTTP ${response.code()}"
+                            }
                         } catch (e: Exception) {
                             "Código HTTP ${response.code()}"
                         }

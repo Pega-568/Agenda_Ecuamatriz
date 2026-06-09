@@ -79,23 +79,36 @@ fun MeetingDetailScreen(meetingId: Int, onBack: () -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Mi Invitación: ${currentMeeting.invitationStatus ?: "N/A"}")
-            Text(text = "Mi Asistencia: ${currentMeeting.attendanceStatus ?: "N/A"}")
+            
+            if (currentMeeting.roleInMeeting == "creator") {
+                Text(text = "Rol: Organizador")
+                if (currentMeeting.canShowQr == true) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "El código QR puede generarse en la Web.")
+                }
+            } else {
+                Text(text = "Mi Invitación: ${currentMeeting.myInvitationStatus ?: "N/A"}")
+                Text(text = "Mi Asistencia: ${currentMeeting.myAttendanceStatus ?: "N/A"}")
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            if (currentMeeting.invitationStatus == "pendiente") {
+            if (currentMeeting.canAccept == true || currentMeeting.canReject == true) {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Button(onClick = {
-                        coroutineScope.launch {
-                            val response = ApiClient.create(context).acceptInvitation(meetingId)
-                            if (response.isSuccessful && response.body()?.success == true) onBack() else actionError = "Error al aceptar"
+                    if (currentMeeting.canAccept == true) {
+                        Button(onClick = {
+                            coroutineScope.launch {
+                                val response = ApiClient.create(context).acceptInvitation(meetingId)
+                                if (response.isSuccessful && response.body()?.success == true) onBack() else actionError = "Error al aceptar"
+                            }
+                        }) {
+                            Text("Aceptar")
                         }
-                    }) {
-                        Text("Aceptar")
                     }
-                    OutlinedButton(onClick = { showRejectDialog = true }) {
-                        Text("Rechazar")
+                    if (currentMeeting.canReject == true) {
+                        OutlinedButton(onClick = { showRejectDialog = true }) {
+                            Text("Rechazar")
+                        }
                     }
                 }
             }

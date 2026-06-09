@@ -70,7 +70,12 @@ La app sigue una arquitectura moderna dividida por paquetes lógicos:
    *Nota en Windows PowerShell: `.\gradlew.bat clean` y `.\gradlew.bat assembleDebug`*.
 2. El APK se generará y puede instalarse en el emulador o teléfono.
 
-## Estado Actual (Cierre Fase 8 - Endurecimiento)
+## Estado Actual (Fase 9 - Estabilización y Unificación)
+- **Agenda Unificada**: Se reemplazaron las pestañas "Hoy" y "Próximas" por una única pestaña "Agenda" que muestra de forma consolidada todas las reuniones confirmadas y programadas del usuario, separada de las invitaciones pendientes. Se integró un *polling* ligero cada 15 segundos en la UI para mantener sincronizada la agenda sin recargar manualmente.
+- **Creación de Reuniones**: Ahora es posible crear reuniones directamente desde la aplicación móvil. El formulario carga dinámicamente las salas disponibles y a los usuarios activos (excluyendo a administradores), e incluye validaciones de hora y de participantes obligatorios.
+- **Roles en Móvil**:
+  - **Secretaría**: En Android, el rol de Secretaría funciona exclusivamente como un usuario operativo (puede ver sus propias reuniones, ser invitada, crear reuniones). Las capacidades de supervisión institucional quedan reservadas para la versión Web.
+  - **Admin**: El rol Administrador está explícitamente bloqueado en la API para el entorno móvil, devolviendo un error 403 controlado informando que debe utilizar el panel web.
 - **FCM**: La app obtiene correctamente el token de FirebaseMessaging y lo registra en el backend. Sin embargo, el envío de notificaciones push está deshabilitado en el backend (`FCM_ENABLED=false` en el seeder), por lo que por el momento se registra pero no se envía push real.
 - **Autenticación y Sesión**: Implementada la renovación automática de tokens JWT (`refresh_token`) usando `OkHttp Authenticator`. Si el token expira y la renovación falla, la aplicación cierra la sesión automáticamente, limpia las preferencias y redirige a la pantalla de Login con un mensaje claro al usuario.
 - **QR / Asistencia**: Se ha implementado de forma nativa el escaneo de códigos QR usando `CameraX` y `ML Kit Barcode Scanning`. El usuario puede escanear el QR directamente o introducir la URL/token de forma manual a través de una opción secundaria de (Debug/Manual). El código maneja el ciclo completo y muestra alertas en caso de fallo, éxito o sesiones expiradas.
