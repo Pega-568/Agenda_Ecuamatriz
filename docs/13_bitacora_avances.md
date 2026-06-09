@@ -446,3 +446,19 @@ grok\ para pilotos remotos.
 - Entrega del piloto para UAT (Pruebas de Aceptación de Usuario) manual.
 - Futuras fases (Reportes, Fichas técnicas, Panel móvil) quedan bajo reserva y planificación posterior.
 
+
+### [2026-06-09] — Preparación de Entorno para Pruebas Reales (Local LAN)
+
+**Qué se hizo**:
+- Identificada la IP local en red LAN: \192.168.0.139\.
+- Verificado el estado de los contenedores Docker y el seeder idempotente.
+- Confirmado éxito de la suite de pruebas del backend (100% passed).
+- Actualizado el \NetworkConfig.kt\ en Android para apuntar a la IP LAN para pruebas con teléfonos físicos conectados a la misma red WiFi.
+- Añadido \ndroid:usesCleartextTraffic="true\" en el \AndroidManifest.xml\ de Android para permitir tráfico local HTTP.
+- Construida y empaquetada la APK Debug localmente.
+- Creado documento \docs/22_local_real_testing.md\ detallando las pruebas de humo web y móvil a ejecutar por los usuarios reales.
+
+**Nota técnica**:
+No se utilizó \
+grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de la LAN para testeo directo e inmediato.
+

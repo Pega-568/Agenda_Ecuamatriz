@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:windowSoftInputMode="adjustResize"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.AgendaMovil">
         <activity
             android:name=".MainActivity"
