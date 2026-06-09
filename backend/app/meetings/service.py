@@ -25,7 +25,9 @@ class MeetingService:
         MeetingService._ensure_can_operate_meetings(creator, allow_secretary=True)
         participant_ids = data["participant_ids"]
         if len(participant_ids) != len(set(participant_ids)):
-            raise ValueError("No se permiten participantes duplicados.")
+            participant_ids = list(set([int(pid) for pid in data.get("participant_ids", []) if pid]))
+        if not participant_ids:
+            raise ValueError("Debe seleccionar al menos un participante.")
 
         modality = MeetingService._normalize_modality(data["modality"])
         if modality in (MeetingModality.IN_PERSON, MeetingModality.HYBRID) and not data.get("room_id"):
@@ -249,7 +251,7 @@ class MeetingService:
         if user.role.slug == RoleSlug.ADMIN:
             raise PermissionError("Admin no opera reuniones.")
         if user.role.slug == RoleSlug.SECRETARY and not allow_secretary:
-            return
+            raise PermissionError("Secretaría no puede realizar esta operación.")
 
     @staticmethod
     def _normalize_modality(modality: str) -> str:

@@ -1,0 +1,87 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+  <div class="card-body">
+    <h3 style="margin-bottom: 1rem;">Nuevo Usuario</h3>
+    <form method="POST" action="{{ url_for('web_admin.users') }}" class="form-group">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <label>Nombre Completo</label>
+          <input type="text" name="full_name" class="form-control" required>
+        </div>
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div>
+          <label>Contraseña</label>
+          <input type="password" name="password" class="form-control" required>
+        </div>
+        <div>
+          <label>Rol</label>
+          <select name="role_id" class="form-control" required>
+            {% for r in roles %}
+            <option value="{{ r.id }}">{{ r.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Área</label>
+          <select name="area_id" class="form-control">
+            <option value="">Ninguna</option>
+            {% for a in areas %}
+            <option value="{{ a.id }}">{{ a.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Crear Usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Área</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.full_name }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="badge badge-info">{{ user.role.name }}</span></td>
+            <td>{{ user.area.name if user.area else 'N/A' }}</td>
+            <td>
+              {% if user.is_active %}
+                <span class="badge badge-success">Activo</span>
+              {% else %}
+                <span class="badge badge-danger">Inactivo</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" style="text-align: center;">No hay usuarios registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

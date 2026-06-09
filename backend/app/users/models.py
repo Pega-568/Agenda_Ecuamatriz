@@ -114,3 +114,22 @@ class User(UserMixin, db.Model):
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email={self.email} role={self.role_id}>"
+
+class MobileDeviceToken(db.Model):
+    """
+    Representa un token de dispositivo FCM registrado por un usuario.
+    Permite notificaciones push.
+    """
+    __tablename__ = "mobile_device_tokens"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    fcm_token = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    last_used_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    user = db.relationship("User", backref=db.backref("mobile_devices", lazy="dynamic", cascade="all, delete-orphan"))
+
+    def __repr__(self) -> str:
+        return f"<MobileDeviceToken id={self.id} user_id={self.user_id}>"

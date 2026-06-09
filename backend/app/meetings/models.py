@@ -192,6 +192,8 @@ class MeetingParticipant(db.Model):
     )
     attendance_method = db.Column(db.String(30), nullable=True)
     attendance_marked_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    attendance_marked_by_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    attendance_comment = db.Column(db.Text, nullable=True)
     attendance_justification = db.Column(db.Text, nullable=True)
 
     # ─── Constraints ─────────────────────────────────────────────────────
@@ -207,6 +209,7 @@ class MeetingParticipant(db.Model):
         back_populates="participations",
         lazy="joined",
     )
+    attendance_marked_by = db.relationship("User", foreign_keys=[attendance_marked_by_user_id])
 
     def __repr__(self) -> str:
         return (

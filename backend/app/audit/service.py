@@ -9,6 +9,9 @@ class AuditEvent:
     MEETING_ACCEPTED = "meeting_accepted"
     MEETING_REJECTED = "meeting_rejected"
     MEETING_CANCELLED = "meeting_cancelled"
+    ATTENDANCE_TOKEN_CREATED = "attendance_token_created"
+    ATTENDANCE_MARKED_QR = "attendance_marked_qr"
+    ATTENDANCE_MARKED_MANUAL = "attendance_marked_manual"
 
 
 class AuditService:

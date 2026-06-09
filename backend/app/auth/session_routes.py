@@ -53,12 +53,15 @@ def login_submit():
     Implementado en Fase 1.
     """
     from app.auth.service import AuthService
+    from flask import flash
 
     email = request.form.get("email", "")
     password = request.form.get("password", "")
     user = AuthService.authenticate(email, password)
     if not user:
-        return render_template("auth/login.html", error="Credenciales inválidas o usuario inactivo."), 401
+        flash("Credenciales inválidas o usuario inactivo.", "danger")
+        return redirect(url_for("auth_web.login_form"))
+    
     login_user(user)
     return redirect(url_for("auth_web.dashboard"))
 
@@ -79,5 +82,10 @@ def logout():
 @auth_web_bp.route("/dashboard")
 @login_required
 def dashboard():
-    """Dashboard mínimo por rol para validar sesión web."""
-    return render_template("dashboard.html")
+    """Redirige al dashboard específico según el rol del usuario."""
+    if current_user.role_slug == 'admin':
+        return redirect(url_for('web_admin.dashboard'))
+    elif current_user.role_slug == 'secretaria':
+        return redirect(url_for('web_secretary.dashboard'))
+    else:
+        return redirect(url_for('web_user.dashboard'))

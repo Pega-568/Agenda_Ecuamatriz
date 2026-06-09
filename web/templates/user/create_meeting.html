@@ -1,0 +1,93 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Nueva Reunión{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px;">
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('web_user.create_meeting') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      
+      <div class="form-group">
+        <label for="title" class="form-label">Título de la Reunión</label>
+        <input type="text" id="title" name="title" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="objective" class="form-label">Objetivo de la Reunión</label>
+        <input type="text" id="objective" name="objective" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="agenda_items" class="form-label">Orden del Día (separe los puntos por comas)</label>
+        <textarea id="agenda_items" name="agenda_items" class="form-control" rows="2" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="description" class="form-label">Descripción (Opcional)</label>
+        <textarea id="description" name="description" class="form-control" rows="2"></textarea>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-4);">
+        <div class="form-group">
+          <label for="date" class="form-label">Fecha de Inicio</label>
+          <input type="date" id="date" name="date" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="start_time" class="form-label">Hora de Inicio</label>
+          <input type="time" id="start_time" name="start_time" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="end_time" class="form-label">Hora de Fin</label>
+          <input type="time" id="end_time" name="end_time" class="form-control" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="room_id" class="form-label">Sala de Reuniones</label>
+        <select id="room_id" name="room_id" class="form-control" required>
+          <option value="">-- Seleccionar Sala --</option>
+          {% for room in rooms %}
+          <option value="{{ room.id }}">{{ room.name }} (Capacidad: {{ room.capacity }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Participantes Invitados</label>
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-gray-300); padding: 10px; border-radius: 4px;">
+          {% for user in users %}
+          <div style="margin-bottom: 5px;">
+            <label style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" name="participant_ids" value="{{ user.id }}">
+              {{ user.full_name }} ({{ user.email }})
+            </label>
+          </div>
+          {% endfor %}
+          {% if not users %}
+          <p style="color: var(--color-gray-500); font-size: 0.9em; margin: 0;">No hay usuarios disponibles para invitar.</p>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="form-group" style="margin-top: var(--spacing-6); padding-top: var(--spacing-4); border-top: 1px solid var(--color-gray-300);">
+        <button type="submit" class="btn btn-primary" onclick="return validateParticipants()">Agendar Reunión</button>
+        <a href="{{ url_for('web_user.dashboard') }}" class="btn btn-secondary" style="margin-left: var(--spacing-2);">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function validateParticipants() {
+    var checkboxes = document.querySelectorAll('input[name="participant_ids"]:checked');
+    if (checkboxes.length === 0) {
+        alert("Debe seleccionar al menos un participante.");
+        return false;
+    }
+    return true;
+}
+</script>
+{% endblock %}

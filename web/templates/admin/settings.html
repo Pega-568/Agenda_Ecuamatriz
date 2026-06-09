@@ -1,0 +1,25 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Configuración del Sistema{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px;">
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('web_admin.settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      
+      {% for setting in settings %}
+      <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="{{ setting.key }}" class="form-label" style="font-weight: 600;">{{ setting.key }}</label>
+        <p style="font-size: 0.8rem; color: var(--color-gray-600); margin: 0 0 0.5rem 0;">{{ setting.description }}</p>
+        <input type="text" id="{{ setting.key }}" name="{{ setting.key }}" class="form-control" value="{{ setting.value }}">
+      </div>
+      {% endfor %}
+      
+      <div class="form-group" style="margin-top: var(--spacing-6);">
+        <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

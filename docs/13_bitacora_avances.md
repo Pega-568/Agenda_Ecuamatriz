@@ -287,5 +287,200 @@
 
 ---
 
+### [2026-06-08] — Fase 3 — QR fijo y control de asistencia
+
+**Qué se hizo**:
+- Creada rama `phase-3/attendance-qr` desde `phase-2/meetings-availability`.
+- Implementado servicio `app/attendance/service.py`.
+- Implementado schema `ManualAttendanceSchema`.
+- Actualizado `AttendanceToken` para guardar `token_hash` en lugar de token plano.
+- Agregados campos de control manual en `MeetingParticipant`.
+- Agregados settings QR/manuales al seeder.
+- Implementados endpoints:
+  - `POST /api/meetings/<meeting_id>/attendance-token`
+  - `POST /api/attendance/qr/<token>`
+  - `GET /api/meetings/<meeting_id>/attendance`
+  - `POST /api/meetings/<meeting_id>/attendance/manual`
+- Agregados eventos de auditoría:
+  - `attendance_token_created`
+  - `attendance_marked_qr`
+  - `attendance_marked_manual`
+- Agregados eventos de notificación:
+  - `qr_available`
+  - `attendance_marked`
+  - `manual_attendance_marked`
+- Creada migración `6b7a85062386_qr_attendance_phase_3.py`.
+- Agregados tests de Fase 3 contra PostgreSQL Docker.
+
+**Decisiones tomadas**:
+- QR fijo por reunión, no dinámico.
+- El token plano se entrega solo al crear el QR y no se persiste.
+- La base guarda `token_hash`.
+- Si ya existe token activo, se mantiene uno solo y no se reconstruye el token plano.
+- Invitados `pending` o `rejected` no marcan asistencia por QR.
+- No se implementa finalize; ausentes se calcularán después desde `accepted + not_marked`.
+
+**Validaciones ejecutadas**:
+- `docker compose ps`: PostgreSQL healthy.
+- `flask db upgrade`: OK.
+- `python scripts/seed_all.py`: OK e idempotente.
+- `pytest`: 46 passed.
+- `/health`: HTTP 200.
+
+**Confirmaciones**:
+- Tests usan PostgreSQL Docker.
+- No se usa SQLite.
+- No se creó `.env` real.
+- No se copiaron archivos de Stitch.
+- No se implementaron fichas técnicas, audio/transcripción, Android, reportes Excel ni frontend avanzado.
+
+**Próximo paso — Fase 4**:
+- Fichas técnicas/actas posteriores a reunión y cálculo formal de ausentes, sin depender todavía de audio/transcripción.
+
+---
+
 *Bitácora de avances — Agenda Ecuamatriz*
 *(Actualizar esta sección al finalizar cada fase o avance significativo)*
+### 5. Fase 5: Web Operativa (Completada)
+
+**Objetivo Logrado**:
+Construir la interfaz web principal del sistema Agenda Ecuamatriz utilizando Jinja2 (Vanilla HTML/CSS).
+Implementar diseño limpio basado visualmente en la estructura original de Stitch pero con código limpio y modular, usando la identidad de Ecuamatriz.
+
+**Acciones Realizadas**:
+- **CSS Modular**: Se creó un sistema de diseño modular en web/static/css/ (pp.css, layout.css, components.css, orms.css).
+- **Plantillas Jinja2**: 
+  - Layouts base y auth.
+  - Vistas divididas en módulos lógicos por rol: dmin/, user/, secretary/.
+- **Rutas Web y Permisos**:
+  - web_admin_bp (Acceso solo Admin)
+  - web_user_bp (Acceso solo Usuario)
+  - web_secretary_bp (Acceso solo Secretaría)
+  - Todas las rutas están integradas en ackend/app/web/.
+- **Seguridad y Funcionalidad**:
+  - Formularios web protegidos globalmente por WTF_CSRF_ENABLED.
+  - Integración de Flask-Login para cookies de sesión con redireccionamiento automático tras login fallido.
+- **Pruebas**: 
+  - 	ests/test_phase5_web.py valida redirecciones, login válido, accesos no autorizados e inyección de sesiones con fixtures de prueba.
+
+**Confirmaciones**:
+- NO se convirtió el frontend a SPA (React/Vue/etc.).
+- Los archivos ZIP de Stitch permanecen ignorados en .gitignore.
+- Se priorizaron elementos funcionales corporativos.
+
+# # #   F a s e   6 :   M o b i l e   A P I   &   F i r e b a s e   ( C o m p l e t a d a ) 
+ -   I m p l e m e n t a c i � n   d e   J W T   p a r a   A P I   M � v i l   ( L o g i n ,   R e f r e s h ,   L o g o u t ,   P e r f i l ) . 
+ -   M o d e l o   M o b i l e D e v i c e T o k e n   y   m i g r a c i o n e s   p a r a   r e g i s t r o   d e   d i s p o s i t i v o s . 
+ -   I n t e g r a c i � n   c o n   f i r e b a s e - a d m i n   ( f a i l - s i l e n t   p a r a   F C M _ E N A B L E D = f a l s e ) . 
+ -   E n d p o i n t s   m � v i l e s   d e d i c a d o s   ( / a p i / m o b i l e / m e e t i n g s   y   / a p i / m o b i l e / a t t e n d a n c e ) . 
+ -   C o r r e c c i � n   d e   p r u e b a s   d e   i n t e g r a c i � n   c o n   P o s t g r e S Q L .  
+ 
+### Fase 7: Aplicación Android Nativa
+- Creación de proyecto base Android con Jetpack Compose y Kotlin.
+- Configuración de arquitectura Retrofit, OkHttp, DataStore y FCM.
+- Implementación de pantallas: Login, Home, MeetingDetail, QrScanner.
+- Configuración de theme corporativo Ecuamatriz.
+- Verificación de compilación local.
+
+### [2026-06-08] — Fase 7 — App Android Nativa
+
+**Qué se hizo**:
+- Preparación del proyecto Android con Jetpack Compose y Kotlin.
+- Configuración del applicationId como com.agenda.movil.
+- Integración de dependencias de Retrofit, OkHttp, DataStore y Firebase.
+- Implementación de cliente HTTP con interceptor para inyectar token JWT.
+- Almacenamiento local seguro para tokens.
+- Implementación de interfaz visual siguiendo identidad Ecuamatriz.
+- Consumo de API para Login y Refresh.
+- Pantalla de inicio con reuniones e invitaciones.
+- Detalles de reunión, aceptar y rechazar invitaciones.
+- Integración de Firebase Messaging para notificaciones.
+
+**Próximo paso**:
+- Continuar con Fase 8: Reportes y Actas.
+
+
+### [2026-06-08] — Cierre Formal Fase 7
+
+**Validaciones Realizadas**:
+- Compilación exitosa del proyecto Android en modo Debug.
+- Backend: Migraciones, seeder idempotente y pruebas (58 tests pasando).
+- NetworkConfig.kt añadido para evitar BASE_URL quemada.
+- Flujos validados: Login contra API, Home con reuniones, Registro de Token FCM, Flujo de simulador de QR.
+- Documentación actualizada con endpoints y limitaciones actuales.
+- Se confirmó que Firebase push no está activado en backend (FCM_ENABLED=false) pero registra dispositivo.
+- Quedan pospuestas funcionalidades futuras como Panel móvil y Escaneo QR físico.
+
+### [2026-06-09] — Fase 8 — Endurecimiento Android
+
+**Qué se hizo**:
+- Implementado flujo de renovación automática de tokens JWT usando `OkHttp Authenticator`.
+- Agregado control de expiración de sesión que limpia preferencias y redirige a la pantalla de Login con estado limpio si el refresh token expira.
+- Implementado el escaneo nativo de códigos QR usando `CameraX` y `ML Kit Barcode Scanning`.
+- Actualizado el flujo de `QrScannerScreen` para solicitar permisos de cámara en tiempo de ejecución y procesar tokens QR reales.
+- Agregada extracción de tokens a partir de URLs y mantenido un modo manual/debug como alternativa secundaria.
+- Tests del backend validados exitosamente tras sembrar datos y migraciones (58 passed).
+- Build Android `assembleDebug` verificado.
+
+**Decisiones de Diseño**:
+- El Authenticator bloquea `/api/auth/refresh` de bucles infinitos y realiza la petición `POST` en hilo sincrónico limpio para renovar la sesión de forma transparente.
+- Las dependencias de Android (camerax, mlkit, guava) se agruparon en el catálogo de versiones de Gradle.
+
+**Próximo paso**:
+- Pasar a siguientes fases (Reportes, Actas u optimizaciones).
+
+
+### [2026-06-09] — Fase 9 — Piloto y Estabilización
+
+**Qué se hizo**:
+- Creada rama \phase-9/stabilization-pilot\.
+- Validada la integridad y limpieza de las exclusiones del proyecto (\.env\, json de firebase, tokens en logs).
+- Verificada la idempotencia del comando de siembra (\seed_all.py\).
+- Confirmado que las pruebas del backend alcanzan el 100% (58 tests) en el entorno de pruebas con PostgreSQL.
+- Verificado el build exitoso de la aplicación Android (\ssembleDebug\).
+- Creado el documento \21_stabilization_pilot.md\ con instrucciones detalladas de UAT y configuraciones de red incluyendo el uso de \
+grok\ para pilotos remotos.
+- Actualizado el archivo de configuración en Android (\NetworkConfig.kt\) con la documentación sobre cómo apuntar localmente y a ngrok.
+
+**Próximo paso**:
+- Entrega del piloto para UAT (Pruebas de Aceptación de Usuario) manual.
+- Futuras fases (Reportes, Fichas técnicas, Panel móvil) quedan bajo reserva y planificación posterior.
+
+
+### [2026-06-09] — Preparación de Entorno para Pruebas Reales (Local LAN)
+
+**Qué se hizo**:
+- Identificada la IP local en red LAN: \192.168.0.139\.
+- Verificado el estado de los contenedores Docker y el seeder idempotente.
+- Confirmado éxito de la suite de pruebas del backend (100% passed).
+- Actualizado el \NetworkConfig.kt\ en Android para apuntar a la IP LAN para pruebas con teléfonos físicos conectados a la misma red WiFi.
+- Añadido \ndroid:usesCleartextTraffic="true\" en el \AndroidManifest.xml\ de Android para permitir tráfico local HTTP.
+- Construida y empaquetada la APK Debug localmente.
+- Creado documento \docs/22_local_real_testing.md\ detallando las pruebas de humo web y móvil a ejecutar por los usuarios reales.
+
+**Nota técnica**:
+No se utilizó \
+grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de la LAN para testeo directo e inmediato.
+
+
+### [2026-06-09] — Correcciones de Piloto Local (Fase 9.1)
+
+**Qué se hizo**:
+- Identificado y corregido el renderizado del token CSRF (que se mostraba en texto plano en la vista del administrador) en los formularios de configuración de usuarios, salas y áreas (\users.html\, \reas.html\, \ooms.html\, \settings.html\, \meeting_detail.html\).
+- Reparada la barra de navegación lateral izquierda (\sidebar.html\) sustituyendo \href="#\"\ por llamadas reales a \url_for\.
+- Corregida la condicional del backend en los templates Jinja2 (\current_user.role_slug\) para que coincida exactamente con los roles hispanos de la BD (\secretaria\, \usuario\) permitiendo revelar los menús correctos a cada perfil.
+- Completadas y superadas nuevamente las pruebas automatizadas del Backend (100% success) y de la APK de Android (assembleDebug).
+- Se documentó la necesidad inamovible de permitir puertos a nivel Firewall de Windows para el acceso del dispositivo móvil físico a la LAN.
+
+**Estado Actual**: Listo y desplegable.
+
+
+- Modificados los templates jinja2 para renderizar \date\, \start_time\ y \end_time\ en lugar del inexistente \scheduled_at\.
+- Corregida la creación de reuniones en web para no pedir IDs por consola, ahora muestra checkboxes con los usuarios activos de la base de datos.
+
+- Limpiados atributos de vista inexistentes en meeting_detail.html y ajustados los estados de badges a los correctos.
+- Corregida la creación de usuarios desde admin para separar nombres desde un único input de full_name.
+- Mejorada la lógica de AttendanceService para regenerar el token QR en caso de recargas web y garantizar despliegue.
+- Eliminada la escalada de privilegios inadvertida de la Secretaría para aceptar o rechazar reuniones desde los endpoints de participantes.
+- Agregados y reforzados tests de UI para verificar la renderización de perfiles de usuario y reunión.
+

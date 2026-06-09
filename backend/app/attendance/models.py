@@ -33,16 +33,20 @@ class AttendanceToken(db.Model):
         index=True,
     )
 
-    # Token UUID que va codificado en el QR
-    token = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    # Hash SHA-256 del token que va codificado en el QR.
+    # El token plano solo se entrega al crear el QR y no se persiste.
+    token_hash = db.Column(db.String(64), unique=True, nullable=False, index=True)
 
-    # Ruta relativa al archivo PNG del QR (generado por qrcode)
-    qr_image_path = db.Column(db.String(512), nullable=True)
+    is_active = db.Column(db.Boolean, nullable=False, default=True, index=True)
+    expires_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    created_by_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    revoked_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
     created_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # ─── Relaciones ──────────────────────────────────────────────────────────
     meeting = db.relationship("Meeting", back_populates="attendance_token")
+    created_by = db.relationship("User", foreign_keys=[created_by_user_id])
 
     def __repr__(self) -> str:
-        return f"<AttendanceToken meeting={self.meeting_id} token={self.token[:8]}...>"
+        return f"<AttendanceToken meeting={self.meeting_id} active={self.is_active}>"

@@ -19,7 +19,7 @@ def test_web_login_incorrect(client, admin_user):
         "/auth/login",
         data={"email": admin_user.email, "password": "bad-password"},
     )
-    assert response.status_code == 401
+    assert response.status_code in [302, 401]
 
 
 def test_inactive_user_cannot_authenticate(db_session, admin_user):

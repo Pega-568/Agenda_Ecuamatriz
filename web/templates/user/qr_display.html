@@ -1,0 +1,32 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}QR de Asistencia{% endblock %}
+
+{% block content %}
+<div class="layout-centered" style="min-height: auto; padding: 0;">
+  <div class="card" style="width: 100%; max-width: 500px; text-align: center;">
+    <div class="card-header">
+      <h3>{{ meeting.title }}</h3>
+      <p style="margin-bottom: 0; color: var(--color-gray-700); font-size: 0.875rem;">Escanea este código para registrar tu asistencia</p>
+    </div>
+    <div class="card-body" style="padding: var(--spacing-8);">
+      
+      <!-- Contenedor del QR (se generaría con JS en frontend o se renderizaría como imagen en backend) -->
+      <div id="qr-container" style="display: inline-block; padding: var(--spacing-4); background-color: white; border: 1px solid var(--color-gray-300); border-radius: var(--border-radius-lg);">
+        <img src="{{ qr_image_url }}" alt="Código QR" style="max-width: 100%; height: auto;">
+      </div>
+      
+      <div style="margin-top: var(--spacing-6);">
+        {% if qr_payload %}
+          <p style="font-weight: 600; font-size: 1.25rem; word-break: break-all;">QR Payload: {{ qr_payload }}</p>
+        {% endif %}
+        <p style="font-size: 0.875rem; color: var(--color-gray-700);">Válido hasta: {{ valid_until }}</p>
+      </div>
+
+    </div>
+    <div class="card-footer">
+      <a href="{{ url_for('web_user.meeting_detail', meeting_id=meeting.id) }}" class="btn btn-secondary">Volver al Detalle</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

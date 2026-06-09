@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Calendario Institucional{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>Reuniones Programadas</h3>
+  </div>
+  <div class="card-body">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Fecha y Hora</th>
+            <th>Organizador</th>
+            <th>Sala</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for meeting in meetings %}
+          <tr>
+            <td>{{ meeting.title }}</td>
+            <td>{{ meeting.date.strftime('%Y-%m-%d') if meeting.date else '' }} {{ meeting.start_time.strftime('%H:%M') if meeting.start_time else '' }}</td>
+            <td>{{ meeting.creator.full_name }}</td>
+            <td>{{ meeting.room.name if meeting.room else 'N/A' }}</td>
+            <td>
+              {% if meeting.status == 'scheduled' %}
+                <span class="badge badge-success">Agendada</span>
+              {% elif meeting.status == 'completed' %}
+                <span class="badge badge-info">Completada</span>
+              {% elif meeting.status == 'cancelled' %}
+                <span class="badge badge-danger">Cancelada</span>
+              {% elif meeting.status == 'rescheduled' %}
+                <span class="badge badge-warning">Reprogramada</span>
+              {% else %}
+                <span class="badge badge-gray">{{ meeting.status }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('web_secretary.meeting_detail', meeting_id=meeting.id) }}" class="btn btn-sm btn-secondary">Ver Detalle</a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center;">No hay reuniones registradas en el sistema.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -113,12 +113,16 @@ def app():
     flask_app = create_app(TestConfig)
 
     with flask_app.app_context():
-        _db.drop_all()
+        with _db.engine.connect() as conn:
+            conn.execute(_db.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+            conn.commit()
         _db.create_all()
         _seed_test_roles_and_areas()
         yield flask_app
         _db.session.remove()
-        _db.drop_all()
+        with _db.engine.connect() as conn:
+            conn.execute(_db.text("DROP SCHEMA public CASCADE; CREATE SCHEMA public;"))
+            conn.commit()
 
 
 @pytest.fixture(scope="function")
@@ -164,7 +168,7 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
     with app.app_context():
         existing = User.query.filter_by(email=email).first()
         if existing:
-            return SimpleNamespace(id=existing.id, email=existing.email)
+            return SimpleNamespace(id=existing.id, email=existing.email, role_id=existing.role_id)
 
         role = Role.query.filter_by(slug=role_slug).first()
         area = Area.query.filter_by(name=area_name).first() if area_name else None
@@ -180,7 +184,7 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
         )
         _db.session.add(user)
         _db.session.commit()
-        return SimpleNamespace(id=user.id, email=user.email)
+        return SimpleNamespace(id=user.id, email=user.email, role_id=user.role_id)
 
 
 @pytest.fixture(scope="function")

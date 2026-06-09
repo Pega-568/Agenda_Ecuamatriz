@@ -1,0 +1,28 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Dashboard de Administrador{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>Resumen del Sistema</h3>
+  </div>
+  <div class="card-body">
+    <p>Bienvenido al panel de administración de Agenda Ecuamatriz.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-4);">
+      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
+        <div class="card-body">
+          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Usuarios</h4>
+          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
+        </div>
+      </div>
+      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
+        <div class="card-body">
+          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Salas</h4>
+          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

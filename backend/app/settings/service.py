@@ -5,14 +5,23 @@ from app.settings.models import SystemSetting
 
 
 class SettingsService:
+    LEGACY_DEFAULT_UPDATES = {
+        "qr_valid_before_minutes": {"15": "10"},
+        "qr_valid_after_minutes": {"30": "20"},
+    }
+
     DEFAULT_SETTINGS = {
         "max_meeting_participants": ("20", "int", "Maximo de participantes por reunion"),
         "max_meeting_duration_minutes": ("240", "int", "Duracion maxima de reunion en minutos"),
         "min_meeting_notice_minutes": ("60", "int", "Anticipacion minima para crear reunion"),
         "allow_meetings_outside_work_hours": ("false", "bool", "Permitir reuniones fuera de horario laboral"),
         "allow_meetings_on_non_working_days": ("false", "bool", "Permitir reuniones en dias no laborables"),
-        "qr_valid_before_minutes": ("15", "int", "Minutos antes para validez de QR futuro"),
-        "qr_valid_after_minutes": ("30", "int", "Minutos despues para validez de QR futuro"),
+        "qr_attendance_enabled": ("true", "bool", "Asistencia por QR habilitada"),
+        "qr_valid_before_minutes": ("10", "int", "Minutos antes para validez de QR"),
+        "qr_valid_after_minutes": ("20", "int", "Minutos despues para validez de QR"),
+        "allow_manual_attendance_by_secretary": ("true", "bool", "Secretaria puede marcar asistencia manual"),
+        "allow_manual_attendance_by_creator": ("false", "bool", "Creador puede marcar asistencia manual"),
+        "require_login_for_qr_attendance": ("true", "bool", "Exigir login para marcar QR"),
         "web_notifications_enabled": ("true", "bool", "Notificaciones web activas"),
         "mobile_notifications_enabled": ("false", "bool", "Notificaciones moviles futuras activas"),
     }
@@ -25,6 +34,8 @@ class SettingsService:
             if not setting:
                 setting = SystemSetting(key=key, value=value, data_type=data_type, description=description)
                 db.session.add(setting)
+            elif key in SettingsService.LEGACY_DEFAULT_UPDATES:
+                setting.value = SettingsService.LEGACY_DEFAULT_UPDATES[key].get(setting.value, setting.value)
             settings.append(setting)
         db.session.commit()
         return settings

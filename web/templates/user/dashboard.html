@@ -1,0 +1,62 @@
+{% extends "layouts/base.html" %}
+
+{% block page_title %}Mi Panel{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-6);">
+  
+  <div class="card">
+    <div class="card-header">
+      <h3>Reuniones de Hoy</h3>
+    </div>
+    <div class="card-body">
+      {% if today_meetings %}
+        <ul style="display: flex; flex-direction: column; gap: var(--spacing-3);">
+        {% for meeting in today_meetings %}
+          <li style="padding: var(--spacing-3); background-color: var(--color-gray-50); border-radius: var(--border-radius-md); border: 1px solid var(--color-gray-300);">
+            <div style="font-weight: 600;">{{ meeting.title }}</div>
+            <div style="font-size: 0.875rem; color: var(--color-gray-700);">{{ meeting.start_time.strftime('%H:%M') }} - Sala: {{ meeting.room.name if meeting.room else 'Virtual' }}</div>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color: var(--color-gray-700);">No tienes reuniones programadas para hoy.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Invitaciones Pendientes</h3>
+    </div>
+    <div class="card-body">
+      {% if pending_invitations %}
+        <ul style="display: flex; flex-direction: column; gap: var(--spacing-3);">
+        {% for inv in pending_invitations %}
+          <li style="padding: var(--spacing-3); background-color: var(--color-warning-light); border-radius: var(--border-radius-md); border: 1px solid #FDE68A;">
+            <div style="font-weight: 600;">{{ inv.meeting.title }}</div>
+            <div style="font-size: 0.875rem;">{{ inv.meeting.date.strftime('%Y-%m-%d') }} {{ inv.meeting.start_time.strftime('%H:%M') }}</div>
+            <div style="margin-top: var(--spacing-2); display: flex; gap: var(--spacing-2); flex-direction: column;">
+              <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="accept">
+                <button class="btn btn-sm btn-primary">Aceptar</button>
+              </form>
+              <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="reject">
+                <input type="text" name="comment" placeholder="Motivo de rechazo..." class="form-control" style="padding: 0.2rem;" required>
+                <button type="submit" class="btn btn-sm btn-danger">Rechazar</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p style="color: var(--color-gray-700);">No tienes invitaciones pendientes.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

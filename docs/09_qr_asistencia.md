@@ -2,127 +2,178 @@
 
 ## Decisión de diseño
 
-**QR fijo por reunión.** No QR rotativo en la primera versión.
+Fase 3 implementa QR fijo por reunión. No implementa QR dinámico, rotativo ni generación de imagen PNG. El backend devuelve el payload/URL para que una fase web posterior pueda renderizar el QR.
 
 Razones:
-- Simplicidad de implementación y depuración.
-- El QR rotativo agrega complejidad sin beneficio significativo en contexto interno de empresa.
-- La ventana de tiempo configurable mitiga el riesgo de uso fuera de contexto.
-- El QR exige usuario autenticado, lo que ya limita el uso indebido.
 
----
+- Mantiene simple el primer control de asistencia.
+- La ventana de validez reduce uso fuera de contexto.
+- El endpoint exige usuario autenticado.
+- El token plano no se persiste en base de datos.
 
-## Generación del QR
+## Token
 
-- Se genera automáticamente al crear la reunión.
-- Contiene una URL con el token UUID: `https://agenda.ecuamatriz.com/api/attendance/scan`
-- El token UUID es único por reunión y se almacena en `AttendanceToken`.
-- Se genera un archivo PNG del QR y se guarda en `QR_OUTPUT_DIR`.
+El servicio genera un token aleatorio con `secrets.token_urlsafe(32)`.
 
-### Biblioteca Python
-```python
-import qrcode
-import uuid
+Persistencia:
 
-token = str(uuid.uuid4())
-qr = qrcode.make(f"{APP_URL}/api/attendance/scan?token={token}")
-qr.save(f"{QR_OUTPUT_DIR}/{token}.png")
+- Se guarda `token_hash` SHA-256.
+- No se guarda token plano.
+- La validación compara hash del token recibido contra `attendance_tokens.token_hash`.
+
+Limitación documentada:
+
+- Si ya existe un token activo, el endpoint mantiene un solo token activo y devuelve metadatos, pero `attendance_url` y `qr_payload` salen `null` porque el token plano no puede reconstruirse. El cliente debe conservar la URL recibida al crear el token.
+
+## Generación
+
+Endpoint:
+
+```http
+POST /api/meetings/<meeting_id>/attendance-token
+Authorization: Bearer <access_token>
 ```
 
----
+Permisos:
+
+- Creador de la reunión.
+- Secretaría.
+- Admin no opera QR.
+
+Reglas:
+
+- Reunión debe existir.
+- Reunión no debe estar cancelada.
+- Si ya existe token activo, no se crea otro.
+- Al crear token se registra auditoría `attendance_token_created`.
+
+Respuesta al crear:
+
+```json
+{
+  "meeting_id": 1,
+  "attendance_url": "http://localhost:5000/attendance/qr/<token>",
+  "qr_payload": "http://localhost:5000/attendance/qr/<token>",
+  "token_available": true,
+  "token_created": true,
+  "valid_from": "2026-06-12T09:50:00",
+  "valid_until": "2026-06-12T11:20:00"
+}
+```
 
 ## Ventana de validez
 
-| Parámetro                   | Config key               | Default |
-|-----------------------------|--------------------------|---------|
-| Minutos antes del inicio    | `qr_valid_minutes_before`| 15 min  |
-| Minutos después del fin     | `qr_valid_minutes_after` | 30 min  |
+Settings:
 
-```
-Reunión: 10:00 - 11:30
-QR válido desde: 09:45 (15 min antes)
-QR válido hasta: 12:00 (30 min después)
-```
+| Config key | Default |
+| --- | --- |
+| `qr_attendance_enabled` | `true` |
+| `qr_valid_before_minutes` | `10` |
+| `qr_valid_after_minutes` | `20` |
+| `require_login_for_qr_attendance` | `true` |
 
----
+Ejemplo:
 
-## Validaciones al escanear
-
-El backend valida **en orden**:
-
-1. ✅ Token existe en `AttendanceToken`
-2. ✅ La reunión asociada existe
-3. ✅ La reunión no está cancelada
-4. ✅ El usuario está autenticado (JWT válido)
-5. ✅ El usuario es participante de esa reunión
-6. ✅ El usuario está dentro de la ventana de validez (inicio - before ≤ now ≤ fin + after)
-7. ✅ El usuario no ha marcado asistencia previamente
-
-Si alguna validación falla → error con código específico.
-
----
-
-## Flujo completo
-
-```
-[Usuario Android/Web]
-    │
-    ├─→ Abre app → escanea QR con cámara
-    │
-    ├─→ App extrae token del QR
-    │
-    ├─→ POST /api/attendance/scan
-    │       { "token": "uuid-aqui" }
-    │       + JWT en header
-    │
-    ├─→ Backend ejecuta validaciones (ver arriba)
-    │
-    ├─→ Si válido:
-    │       - attendance_status = "present"
-    │       - attendance_method = "qr"
-    │       - attendance_marked_at = now()
-    │       - Retorna 200 con confirmación
-    │
-    └─→ Si inválido:
-            - Retorna error con código descriptivo
+```text
+Reunión: 10:00 - 11:00
+QR válido desde: 09:50
+QR válido hasta: 11:20
 ```
 
+## Marcado por QR
+
+Endpoint:
+
+```http
+POST /api/attendance/qr/<token>
+Authorization: Bearer <access_token>
+```
+
+Validaciones:
+
+1. QR habilitado por setting.
+2. Token existe y está activo.
+3. Reunión existe.
+4. Reunión no está cancelada.
+5. Usuario autenticado y activo.
+6. Usuario es participante.
+7. Invitación está `accepted`.
+8. Fecha/hora actual está dentro de ventana QR.
+9. Asistencia no fue marcada previamente.
+
+Resultado:
+
+- `attendance_status = present`
+- `attendance_method = qr`
+- `attendance_marked_at = now UTC`
+- `attendance_marked_by_user_id = usuario autenticado`
+- Auditoría `attendance_marked_qr`
+
+## Consulta de asistencia
+
+Endpoint:
+
+```http
+GET /api/meetings/<meeting_id>/attendance
+```
+
+Permisos:
+
+- Creador.
+- Secretaría.
+- Admin no.
+- Usuarios ajenos no.
+
+Devuelve resumen por estado y lista de participantes con estado de invitación y asistencia.
+
+## Marcado manual
+
+Endpoint:
+
+```http
+POST /api/meetings/<meeting_id>/attendance/manual
+```
+
+Body:
+
+```json
+{
+  "user_id": 2,
+  "attendance_status": "present",
+  "comment": "Marcado manual por Secretaría"
+}
+```
+
+Settings:
+
+| Config key | Default |
+| --- | --- |
+| `allow_manual_attendance_by_secretary` | `true` |
+| `allow_manual_attendance_by_creator` | `false` |
+
+Reglas:
+
+- Secretaría puede marcar si el setting está habilitado.
+- Creador puede marcar solo si su setting está habilitado.
+- Admin no opera asistencia.
+- Reunión cancelada no permite marcado.
+- Usuario debe ser participante.
+- Usuarios que rechazaron solo pueden ser marcados por Secretaría con comentario obligatorio.
+- Método registrado: `manual_secretary` o `manual_creator`.
+- Auditoría `attendance_marked_manual`.
+
+## No Implementado En Fase 3
+
+- QR dinámico o rotativo.
+- Imagen QR base64 o PNG.
+- Escáner web o Android.
+- Finalización de asistencia.
+- Cálculo persistido de ausentes.
+- Fichas técnicas.
+- Reportes Excel.
+
+Ausentes se podrán calcular en fases posteriores como participantes `accepted` con `attendance_status = not_marked` después de la ventana QR.
+
 ---
 
-## Estados de asistencia resultantes
-
-| Estado        | Cómo se llega                                    |
-|---------------|--------------------------------------------------|
-| `not_marked`  | Estado inicial (no escaneó QR)                   |
-| `present`     | Escaneó QR exitosamente                          |
-| `absent`      | Marcado por Secretaría/creador (ausencia)        |
-| `justified`   | Ausencia registrada con justificación            |
-
----
-
-## Asistencia manual
-
-Si la configuración lo permite (`allow_manual_attendance_secretary` / `allow_manual_attendance_creator`):
-- Secretaría puede marcar `present`, `absent` o `justified` para cualquier participante.
-- El creador puede marcar asistencia manual para sus invitados.
-- Se registra `attendance_method = "manual_secretary"` o `"manual_creator"`.
-
----
-
-## Pantalla QR en web
-
-- **Creador** de la reunión puede ver el QR desde el detalle de la reunión.
-- El QR se muestra como imagen (PNG servida desde el backend).
-- Se puede imprimir o proyectar para que los asistentes lo escaneen.
-
----
-
-## Pantalla QR en Android
-
-- **Escaneo**: Pantalla con cámara usando CameraX + ML Kit Barcode.
-- **Mostrar QR**: Si el usuario es creador, puede mostrar el QR en su pantalla.
-- La app envía el token al backend y muestra el resultado (ok / error).
-
----
-
-*Documento QR de asistencia — Fase 0 — Agenda Ecuamatriz*
+*Documento actualizado en Fase 3 — Agenda Ecuamatriz*

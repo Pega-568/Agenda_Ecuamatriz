@@ -9,6 +9,9 @@ class NotificationEvent:
     MEETING_ACCEPTED = "meeting_accepted"
     MEETING_REJECTED = "meeting_rejected"
     MEETING_CANCELLED = "meeting_cancelled"
+    QR_AVAILABLE = "qr_available"
+    ATTENDANCE_MARKED = "attendance_marked"
+    MANUAL_ATTENDANCE_MARKED = "manual_attendance_marked"
 
 
 class NotificationService:
