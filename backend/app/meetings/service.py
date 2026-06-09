@@ -79,10 +79,10 @@ class MeetingService:
         return meeting, availability
 
     @staticmethod
-    def list_for_user(user: User, filters: dict) -> list[Meeting]:
+    def list_for_user(user: User, filters: dict, mobile_context: bool = False) -> list[Meeting]:
         MeetingService._ensure_can_operate_meetings(user, allow_secretary=True)
         query = Meeting.query
-        if user.role.slug == RoleSlug.SECRETARY:
+        if user.role.slug == RoleSlug.SECRETARY and not mobile_context:
             pass
         else:
             created_ids = db.session.query(Meeting.id).filter(Meeting.created_by_user_id == user.id)
