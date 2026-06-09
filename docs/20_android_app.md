@@ -76,4 +76,5 @@ La app sigue una arquitectura moderna dividida por paquetes lógicos:
 - **QR / Asistencia**: Se ha implementado de forma nativa el escaneo de códigos QR usando `CameraX` y `ML Kit Barcode Scanning`. El usuario puede escanear el QR directamente o introducir la URL/token de forma manual a través de una opción secundaria de (Debug/Manual). El código maneja el ciclo completo y muestra alertas en caso de fallo, éxito o sesiones expiradas.
 
 ## Limitaciones y Pendientes
+- **Pruebas de Cámara**: Las funcionalidades de `CameraX` para el escáner QR deben probarse de preferencia en un dispositivo Android físico, ya que algunos emuladores no cuentan con la interfaz o recursos adecuados para inyectar imágenes en la cámara simulada con fiabilidad.
 - Funcionalidades como: **Reportes, Actas, Fichas técnicas, Audio, Transcripción, PDF, Excel y Panel administrativo móvil** no forman parte del alcance de la app base actual y quedan pospuestas.
