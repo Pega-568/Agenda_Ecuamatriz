@@ -462,3 +462,15 @@ grok\ para pilotos remotos.
 No se utilizó \
 grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de la LAN para testeo directo e inmediato.
 
+
+### [2026-06-09] — Correcciones de Piloto Local (Fase 9.1)
+
+**Qué se hizo**:
+- Identificado y corregido el renderizado del token CSRF (que se mostraba en texto plano en la vista del administrador) en los formularios de configuración de usuarios, salas y áreas (\users.html\, \reas.html\, \ooms.html\, \settings.html\, \meeting_detail.html\).
+- Reparada la barra de navegación lateral izquierda (\sidebar.html\) sustituyendo \href="#\"\ por llamadas reales a \url_for\.
+- Corregida la condicional del backend en los templates Jinja2 (\current_user.role_slug\) para que coincida exactamente con los roles hispanos de la BD (\secretaria\, \usuario\) permitiendo revelar los menús correctos a cada perfil.
+- Completadas y superadas nuevamente las pruebas automatizadas del Backend (100% success) y de la APK de Android (assembleDebug).
+- Se documentó la necesidad inamovible de permitir puertos a nivel Firewall de Windows para el acceso del dispositivo móvil físico a la LAN.
+
+**Estado Actual**: Listo y desplegable.
+

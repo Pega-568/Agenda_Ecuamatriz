@@ -71,7 +71,7 @@
             <td>
               {% if participant.attendance_status == 'not_marked' %}
               <form method="POST" action="{{ url_for('web_secretary.mark_manual_attendance', meeting_id=meeting.id) }}" style="display: flex; gap: 0.5rem; align-items: center;">
-                {{ csrf_token() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="user_id" value="{{ participant.user_id }}">
                 <select name="status" class="form-control" style="width: auto; padding: 0.2rem;" required>
                   <option value="">Seleccionar...</option>

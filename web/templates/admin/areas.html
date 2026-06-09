@@ -7,7 +7,7 @@
   <div class="card-body">
     <h3 style="margin-bottom: 1rem;">Nueva Área</h3>
     <form method="POST" action="{{ url_for('web_admin.areas') }}" class="form-group">
-      {{ csrf_token() }}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div>
           <label>Nombre del Área</label>

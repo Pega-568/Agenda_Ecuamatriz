@@ -52,3 +52,8 @@ A continuación, la lista de validaciones que deben ejecutarse manualmente:
 - [ ] **Creación de Reunión**: OK.
 - [ ] **Consulta y Generación QR**: Generado dinámicamente desde el detalle de la reunión.
 - [ ] **Asistencia Manual**: Ingreso manual habilitado para secretaría si la configuración local lo permite.
+
+## Ajustes y Correcciones Post-Prueba (Fase 9.1)
+- **Token CSRF**: Se corrigió el problema visual en los formularios de la interfaz Admin donde el token CSRF se mostraba como texto en lugar de inyectarse como un campo `<input type="hidden">`.
+- **Navegación Sidebar**: Se corrigió el archivo `sidebar.html` asegurando que las URLs redirijan correctamente mediante `url_for` en lugar de anclas muertas (`href="#"`). Se corrigió el mapeo de roles ("secretaria" y "usuario" en lugar de sus versiones en inglés).
+- **Conectividad Firewall**: Si la app de Android arroja un error de conexión, se documentó que es necesario abrir el puerto `5000` (TCP de entrada) en el Firewall local de Windows.
