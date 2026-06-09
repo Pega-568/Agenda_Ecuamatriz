@@ -65,6 +65,12 @@ def test_web_create_meeting(client, regular_user, admin_user, db_session):
         'password': 'Test1234!'
     }, follow_redirects=True)
     
+    response_get = client.get('/user/meetings')
+    assert response_get.status_code == 200
+    
+    response_create_get = client.get('/user/meetings/create')
+    assert response_create_get.status_code == 200
+
     response = client.post('/user/meetings/create', data={
         'title': 'Reunion Web Test',
         'date': '2030-10-10',
@@ -72,7 +78,7 @@ def test_web_create_meeting(client, regular_user, admin_user, db_session):
         'end_time': '11:00',
         'room_id': '',
         'objective': 'Test Obj',
-        'participants': f'{admin.id}',
+        'participant_ids': [str(admin.id)],
         'modality': 'virtual'
     }, follow_redirects=True)
     

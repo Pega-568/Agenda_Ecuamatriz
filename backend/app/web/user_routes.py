@@ -44,6 +44,7 @@ def meetings():
 @web_user_bp.route("/meetings/create", methods=["GET", "POST"])
 def create_meeting():
     from app.rooms.models import Room
+    from app.users.models import User
     from app.meetings.service import MeetingService
     from app import db
     from datetime import datetime
@@ -55,11 +56,11 @@ def create_meeting():
         end_time_str = request.form.get("end_time")
         room_id = request.form.get("room_id")
         objective = request.form.get("objective", "Reunión general")
-        participants_str = request.form.get("participants", "")
         modality = request.form.get("modality", "in_person")
         
-        # Parsear participants, ignorando vacios
-        participant_ids = [int(p.strip()) for p in participants_str.split(",") if p.strip().isdigit()]
+        # Parsear participants desde multiples inputs (checkboxes)
+        participant_ids_str = request.form.getlist("participant_ids")
+        participant_ids = [int(p) for p in participant_ids_str if p.strip().isdigit()]
         
         try:
             date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
@@ -91,7 +92,9 @@ def create_meeting():
             flash(f"Error al crear reunión: {str(e)}", "danger")
             
     rooms_list = db.session.query(Room).filter_by(is_active=True).all()
-    return render_template("user/create_meeting.html", rooms=rooms_list)
+    # Fetch active users excluding admin and current user
+    users_list = db.session.query(User).filter(User.is_active == True, User.role_slug != 'admin', User.id != current_user.id).all()
+    return render_template("user/create_meeting.html", rooms=rooms_list, users=users_list)
 
 @web_user_bp.route("/meetings/<int:meeting_id>")
 def meeting_detail(meeting_id):

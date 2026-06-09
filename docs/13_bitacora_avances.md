@@ -474,3 +474,6 @@ grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de
 
 **Estado Actual**: Listo y desplegable.
 
+
+- Modificados los templates jinja2 para renderizar \date\, \start_time\ y \end_time\ en lugar del inexistente \scheduled_at\.
+- Corregida la creación de reuniones en web para no pedir IDs por consola, ahora muestra checkboxes con los usuarios activos de la base de datos.

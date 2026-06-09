@@ -3,7 +3,7 @@
 {% block page_title %}Detalle de Reunión{% endblock %}
 
 {% block page_actions %}
-  {% if meeting.created_by_user_id == current_user.id and meeting.status == 'confirmed' %}
+  {% if meeting.created_by_user_id == current_user.id and meeting.status == 'scheduled' %}
   <a href="{{ url_for('web_user.qr_display', meeting_id=meeting.id) }}" class="btn btn-primary">
     Mostrar QR de Asistencia
   </a>
@@ -17,7 +17,7 @@
     <span class="badge badge-info">{{ meeting.status | capitalize }}</span>
   </div>
   <div class="card-body">
-    <p><strong>Fecha y Hora:</strong> {{ meeting.scheduled_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Fecha y Hora:</strong> {{ meeting.date.strftime('%Y-%m-%d') if meeting.date else '' }} {{ meeting.start_time.strftime('%H:%M') if meeting.start_time else '' }} - {{ meeting.end_time.strftime('%H:%M') if meeting.end_time else '' }}</p>
     <p><strong>Duración:</strong> {{ meeting.duration_minutes }} minutos</p>
     <p><strong>Sala:</strong> {{ meeting.room.name if meeting.room else 'N/A' }}</p>
     <p><strong>Organizador:</strong> {{ meeting.creator.full_name }}</p>
@@ -38,7 +38,6 @@
           <tr>
             <th>Nombre</th>
             <th>Email</th>
-            <th>Rol en Reunión</th>
             <th>Estado de Invitación</th>
             <th>Asistencia</th>
           </tr>
@@ -48,7 +47,6 @@
           <tr>
             <td>{{ participant.user.full_name }}</td>
             <td>{{ participant.user.email }}</td>
-            <td>{{ participant.role }}</td>
             <td>
               {% if participant.invitation_status == 'accepted' %}
                 <span class="badge badge-success">Aceptado</span>
