@@ -33,19 +33,22 @@ def users():
         area_id = request.form.get("area_id")
         
         try:
-            new_user = User(
-                full_name=full_name,
-                email=email,
-                password_hash=ws.generate_password_hash(password) if password else "",
-                role_id=role_id,
-                area_id=area_id,
-                is_active=True
-            )
-            db.session.add(new_user)
-            db.session.commit()
+            from app.users.service import UserService
+            parts = full_name.strip().split(" ", 1)
+            first_name = parts[0]
+            last_name = parts[1] if len(parts) > 1 else ""
+            
+            data = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "password": password,
+                "role_id": int(role_id) if role_id else None,
+                "area_id": int(area_id) if area_id else None
+            }
+            UserService.create_user(data)
             flash("Usuario creado exitosamente.", "success")
         except Exception as e:
-            db.session.rollback()
             flash(f"Error al crear usuario: {str(e)}", "danger")
         return redirect(url_for("web_admin.users"))
         

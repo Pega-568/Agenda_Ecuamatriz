@@ -18,7 +18,7 @@
   </div>
   <div class="card-body">
     <p><strong>Fecha y Hora:</strong> {{ meeting.date.strftime('%Y-%m-%d') if meeting.date else '' }} {{ meeting.start_time.strftime('%H:%M') if meeting.start_time else '' }} - {{ meeting.end_time.strftime('%H:%M') if meeting.end_time else '' }}</p>
-    <p><strong>Duración:</strong> {{ meeting.duration_minutes }} minutos</p>
+
     <p><strong>Sala:</strong> {{ meeting.room.name if meeting.room else 'N/A' }}</p>
     <p><strong>Organizador:</strong> {{ meeting.creator.full_name }}</p>
     {% if meeting.description %}
@@ -59,8 +59,8 @@
               {% endif %}
             </td>
             <td>
-              {% if participant.attended_at %}
-                <span style="color: var(--color-success);">✔ Sí ({{ participant.attended_at.strftime('%H:%M') }})</span>
+              {% if participant.attendance_marked_at %}
+                <span style="color: var(--color-success);">✔ Sí ({{ participant.attendance_marked_at.strftime('%H:%M') }})</span>
               {% else %}
                 <span style="color: var(--color-gray-400);">---</span>
               {% endif %}

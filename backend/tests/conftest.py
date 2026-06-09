@@ -168,7 +168,7 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
     with app.app_context():
         existing = User.query.filter_by(email=email).first()
         if existing:
-            return SimpleNamespace(id=existing.id, email=existing.email)
+            return SimpleNamespace(id=existing.id, email=existing.email, role_id=existing.role_id)
 
         role = Role.query.filter_by(slug=role_slug).first()
         area = Area.query.filter_by(name=area_name).first() if area_name else None
@@ -184,7 +184,7 @@ def _create_test_user(app, email: str, role_slug: str, first_name: str, area_nam
         )
         _db.session.add(user)
         _db.session.commit()
-        return SimpleNamespace(id=user.id, email=user.email)
+        return SimpleNamespace(id=user.id, email=user.email, role_id=user.role_id)
 
 
 @pytest.fixture(scope="function")

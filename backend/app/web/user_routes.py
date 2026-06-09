@@ -55,8 +55,13 @@ def create_meeting():
         start_time_str = request.form.get("start_time")
         end_time_str = request.form.get("end_time")
         room_id = request.form.get("room_id")
-        objective = request.form.get("objective", "Reunión general")
+        objective = request.form.get("objective")
+        description = request.form.get("description", "")
+        agenda_items_str = request.form.get("agenda_items", "")
         modality = request.form.get("modality", "in_person")
+        
+        # Parsear agenda
+        agenda_items = [item.strip() for item in agenda_items_str.split(",") if item.strip()]
         
         # Parsear participants desde multiples inputs (checkboxes)
         participant_ids_str = request.form.getlist("participant_ids")
@@ -70,7 +75,8 @@ def create_meeting():
             data = {
                 "title": title,
                 "objective": objective,
-                "agenda_items": [],
+                "description": description,
+                "agenda_items": agenda_items,
                 "date": date_obj,
                 "start_time": start_time_obj,
                 "end_time": end_time_obj,

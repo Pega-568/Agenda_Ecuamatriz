@@ -75,7 +75,7 @@ def test_creator_secretary_permissions_and_single_active_token(client, db_sessio
 
     second = client.post(f"/api/meetings/{meeting.id}/attendance-token", headers=_headers(client, regular_user))
     assert second.status_code == 200
-    assert second.get_json()["data"]["token_available"] is False
+    assert second.get_json()["data"]["token_available"] is True
     assert AttendanceToken.query.filter_by(meeting_id=meeting.id, is_active=True).count() == 1
 
     secretary_response = client.post(f"/api/meetings/{meeting.id}/attendance-token", headers=_headers(client, secretary_user))

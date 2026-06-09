@@ -24,39 +24,45 @@ class AttendanceService:
         if meeting.status == MeetingStatus.CANCELLED:
             raise ValueError("La reunión está cancelada.")
 
-        token = AttendanceToken.query.filter_by(meeting_id=meeting.id, is_active=True).first()
-        plain_token = None
-        created = False
-        if not token:
-            plain_token = secrets.token_urlsafe(32)
+        # Invalidar tokens anteriores activos (reutilizando el registro por restricción UNIQUE)
+        existing_token = AttendanceToken.query.filter_by(meeting_id=meeting.id).first()
+        plain_token = secrets.token_urlsafe(32)
+        new_hash = AttendanceService._hash_token(plain_token)
+
+        if existing_token:
+            existing_token.token_hash = new_hash
+            existing_token.is_active = True
+            existing_token.created_by_user_id = actor_user.id
+            token = existing_token
+        else:
             token = AttendanceToken(
                 meeting_id=meeting.id,
-                token_hash=AttendanceService._hash_token(plain_token),
+                token_hash=new_hash,
                 is_active=True,
                 created_by_user_id=actor_user.id,
             )
             db.session.add(token)
-            db.session.flush()
-            AuditService.log(AuditEvent.ATTENDANCE_TOKEN_CREATED, actor_user.id, "AttendanceToken", token.id, {"meeting_id": meeting.id})
-            NotificationService.create(
-                meeting.created_by_user_id,
-                NotificationEvent.QR_AVAILABLE,
-                "QR de asistencia disponible",
-                f"El QR de asistencia está disponible para: {meeting.title}",
-                "Meeting",
-                meeting.id,
-            )
-            db.session.commit()
-            created = True
+            
+        db.session.flush()
+        AuditService.log(AuditEvent.ATTENDANCE_TOKEN_CREATED, actor_user.id, "AttendanceToken", token.id, {"meeting_id": meeting.id})
+        NotificationService.create(
+            meeting.created_by_user_id,
+            NotificationEvent.QR_AVAILABLE,
+            "QR de asistencia disponible",
+            f"El QR de asistencia está disponible para: {meeting.title}",
+            "Meeting",
+            meeting.id,
+        )
+        db.session.commit()
 
         valid_from, valid_until = AttendanceService.valid_window(meeting)
-        attendance_url = AttendanceService._attendance_url(plain_token) if plain_token else None
+        attendance_url = AttendanceService._attendance_url(plain_token)
         return {
             "meeting_id": meeting.id,
             "attendance_url": attendance_url,
             "qr_payload": attendance_url,
-            "token_available": plain_token is not None,
-            "token_created": created,
+            "token_available": True,
+            "token_created": True,
             "valid_from": valid_from.isoformat(),
             "valid_until": valid_until.isoformat(),
         }

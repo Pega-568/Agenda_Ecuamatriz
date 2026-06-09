@@ -249,7 +249,7 @@ class MeetingService:
         if user.role.slug == RoleSlug.ADMIN:
             raise PermissionError("Admin no opera reuniones.")
         if user.role.slug == RoleSlug.SECRETARY and not allow_secretary:
-            return
+            raise PermissionError("Secretaría no puede realizar esta operación.")
 
     @staticmethod
     def _normalize_modality(modality: str) -> str:

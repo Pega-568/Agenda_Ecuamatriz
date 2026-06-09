@@ -28,12 +28,14 @@
             <td>{{ meeting.creator.full_name }}</td>
             <td>{{ meeting.room.name if meeting.room else 'N/A' }}</td>
             <td>
-              {% if meeting.status == 'confirmed' %}
-                <span class="badge badge-success">Confirmada</span>
-              {% elif meeting.status == 'pending' %}
-                <span class="badge badge-warning">Pendiente</span>
+              {% if meeting.status == 'scheduled' %}
+                <span class="badge badge-success">Agendada</span>
+              {% elif meeting.status == 'completed' %}
+                <span class="badge badge-info">Completada</span>
               {% elif meeting.status == 'cancelled' %}
                 <span class="badge badge-danger">Cancelada</span>
+              {% elif meeting.status == 'rescheduled' %}
+                <span class="badge badge-warning">Reprogramada</span>
               {% else %}
                 <span class="badge badge-gray">{{ meeting.status }}</span>
               {% endif %}

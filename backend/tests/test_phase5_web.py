@@ -78,6 +78,8 @@ def test_web_create_meeting(client, regular_user, admin_user, db_session):
         'end_time': '11:00',
         'room_id': '',
         'objective': 'Test Obj',
+        'agenda_items': 'Item 1, Item 2',
+        'description': 'Test description',
         'participant_ids': [str(admin.id)],
         'modality': 'virtual'
     }, follow_redirects=True)
@@ -94,10 +96,81 @@ def test_web_mark_manual_attendance(client, secretary_user, db_session):
         'password': 'Test1234!'
     }, follow_redirects=True)
     
-    # Needs a meeting to test... we can't easily mock one here without creating it.
-    # We will just verify the endpoint rejects GET and needs proper data on POST.
-    response = client.post('/secretary/meetings/9999/attendance/manual', data={
-        'user_id': '1',
+    from app.meetings.models import Meeting, MeetingParticipant, MeetingModality, MeetingStatus, InvitationStatus
+    from datetime import datetime, date, time
+    meeting = Meeting(
+        title="Test Details",
+        objective="Obj",
+        agenda_items=["Item 1"],
+        date=date(2030, 1, 1),
+        start_time=time(10, 0),
+        end_time=time(11, 0),
+        modality=MeetingModality.VIRTUAL,
+        created_by_user_id=sec.id,
+        status=MeetingStatus.SCHEDULED
+    )
+    db.session.add(meeting)
+    db.session.flush()
+    participant = MeetingParticipant(meeting_id=meeting.id, user_id=sec.id, invitation_status=InvitationStatus.ACCEPTED)
+    db.session.add(participant)
+    db.session.commit()
+
+    response_sec_detail = client.get(f'/secretary/meetings/{meeting.id}')
+    assert response_sec_detail.status_code == 200
+    
+    response = client.post(f'/secretary/meetings/{meeting.id}/attendance/manual', data={
+        'user_id': str(sec.id),
         'status': 'present'
     }, follow_redirects=True)
-    assert response.status_code == 404 or b'404' in response.data
+    assert response.status_code == 200
+
+def test_web_admin_create_user(client, admin_user, db_session):
+    admin = admin_user
+    client.post('/auth/login', data={
+        'email': admin.email,
+        'password': 'Test1234!'
+    }, follow_redirects=True)
+    
+    response = client.post('/admin/users', data={
+        'full_name': 'Test New User',
+        'email': 'newuser@ecuamatriz.local',
+        'password': 'Password123!',
+        'role_id': str(admin.role_id),
+        'area_id': ''
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200
+    assert b'Usuario creado exitosamente.' in response.data
+
+def test_secretary_cannot_accept_invitation(client, secretary_user, db_session):
+    sec = secretary_user
+    
+    from app.meetings.models import Meeting, MeetingParticipant, MeetingModality, MeetingStatus, InvitationStatus
+    from datetime import datetime, date, time
+    meeting = Meeting(
+        title="Sec Invite Test",
+        objective="Obj",
+        agenda_items=["Item 1"],
+        date=date(2030, 1, 1),
+        start_time=time(10, 0),
+        end_time=time(11, 0),
+        modality=MeetingModality.VIRTUAL,
+        created_by_user_id=sec.id,
+        status=MeetingStatus.SCHEDULED
+    )
+    db.session.add(meeting)
+    db.session.flush()
+    participant = MeetingParticipant(meeting_id=meeting.id, user_id=sec.id, invitation_status=InvitationStatus.PENDING)
+    db.session.add(participant)
+    db.session.commit()
+    
+    token = None
+    response = client.post('/api/auth/login', json={'email': sec.email, 'password': 'Test1234!'})
+    if response.status_code == 200:
+        token = response.get_json()['data']['access_token']
+        
+    response = client.post(f'/api/meetings/{meeting.id}/accept', headers={'Authorization': f'Bearer {token}'})
+    assert response.status_code == 403
+    data = response.get_json()
+    assert data["error"]["code"] == "FORBIDDEN"
+    assert "Secretar" in data["error"]["message"]

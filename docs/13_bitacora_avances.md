@@ -477,3 +477,10 @@ grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de
 
 - Modificados los templates jinja2 para renderizar \date\, \start_time\ y \end_time\ en lugar del inexistente \scheduled_at\.
 - Corregida la creación de reuniones en web para no pedir IDs por consola, ahora muestra checkboxes con los usuarios activos de la base de datos.
+
+- Limpiados atributos de vista inexistentes en meeting_detail.html y ajustados los estados de badges a los correctos.
+- Corregida la creación de usuarios desde admin para separar nombres desde un único input de full_name.
+- Mejorada la lógica de AttendanceService para regenerar el token QR en caso de recargas web y garantizar despliegue.
+- Eliminada la escalada de privilegios inadvertida de la Secretaría para aceptar o rechazar reuniones desde los endpoints de participantes.
+- Agregados y reforzados tests de UI para verificar la renderización de perfiles de usuario y reunión.
+
