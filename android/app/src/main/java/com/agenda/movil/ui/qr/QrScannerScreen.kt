@@ -9,19 +9,29 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.agenda.movil.data.api.ApiClient
+import com.agenda.movil.ui.components.ErrorState
+import com.agenda.movil.ui.components.LoadingState
+import com.agenda.movil.ui.components.PrimaryButton
+import com.agenda.movil.ui.components.SecondaryButton
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.concurrent.Executors
@@ -116,16 +126,19 @@ fun QrScannerScreen(onBack: () -> Unit, onScanSuccess: (String) -> Unit) {
     var manualToken by remember { mutableStateOf("") }
     var resultMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
+    var isSuccess by remember { mutableStateOf(false) }
 
     val processToken: (String) -> Unit = { rawInput ->
         if (!isLoading) {
             isLoading = true
             resultMessage = null
+            isSuccess = false
             val token = extractToken(rawInput)
             coroutineScope.launch {
                 try {
                     val response = ApiClient.create(context).markAttendanceQR(token)
                     if (response.isSuccessful && response.body()?.success == true) {
+                        isSuccess = true
                         resultMessage = "¡Asistencia registrada correctamente!"
                     } else {
                         val errorBody = response.errorBody()?.string()
@@ -155,51 +168,79 @@ fun QrScannerScreen(onBack: () -> Unit, onScanSuccess: (String) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Escanear QR") },
+                title = { Text("Escanear QR", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
                 actions = {
-                    TextButton(onClick = { manualMode = !manualMode }) {
-                        Text(if (manualMode) "Usar Cámara" else "Modo Manual", color = MaterialTheme.colorScheme.onPrimary)
+                    IconButton(onClick = { manualMode = !manualMode }) {
+                        Icon(
+                            if (manualMode) Icons.Default.CameraAlt else Icons.Default.Edit,
+                            contentDescription = "Cambiar modo"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
-        }
+        },
+        containerColor = if (manualMode) MaterialTheme.colorScheme.background else Color.Black
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (manualMode) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("Ingreso manual (Debug)", style = MaterialTheme.typography.titleLarge)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = manualToken,
-                        onValueChange = { manualToken = it },
-                        label = { Text("Token o URL del QR") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    if (isLoading) {
-                        CircularProgressIndicator()
-                    } else {
-                        Button(onClick = {
-                            if (manualToken.isNotBlank()) {
-                                processToken(manualToken)
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Ingreso Manual (Debug)", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Pega aquí la URL o token del código QR para probar.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            OutlinedTextField(
+                                value = manualToken,
+                                onValueChange = { manualToken = it },
+                                label = { Text("Token o URL del QR") },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                    focusedBorderColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            if (isLoading) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                            } else {
+                                PrimaryButton(
+                                    text = "Procesar Token",
+                                    onClick = {
+                                        if (manualToken.isNotBlank()) {
+                                            processToken(manualToken)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
-                        }) {
-                            Text("Procesar")
                         }
                     }
                 }
@@ -211,47 +252,86 @@ fun QrScannerScreen(onBack: () -> Unit, onScanSuccess: (String) -> Unit) {
                         }
                     })
                     
+                    // Scanner Overlay Box
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(250.dp)
+                            .background(Color.Transparent)
+                    ) {
+                        // Just an empty box to show where the scanner is
+                        // In a real app we'd draw an outline here
+                    }
+
                     if (isLoading) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.5f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator(color = Color.White)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("Registrando asistencia...", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                            }
                         }
                     }
                 } else {
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        Text("Se requiere permiso de cámara para escanear el QR.")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
-                            Text("Solicitar Permiso")
-                        }
+                        ErrorState(message = "Se requiere permiso de cámara para escanear el QR.")
+                        Spacer(modifier = Modifier.height(24.dp))
+                        PrimaryButton(
+                            text = "Solicitar Permiso",
+                            onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                            icon = Icons.Default.CameraAlt
+                        )
                     }
                 }
             }
 
             if (resultMessage != null) {
+                val cardColor = if (isSuccess) Color(0xFF2E7D61) else MaterialTheme.colorScheme.error
                 Card(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .padding(16.dp)
+                        .padding(24.dp)
                         .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = cardColor),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = resultMessage!!, style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { resultMessage = null }) {
-                            Text("Aceptar")
+                        Text(
+                            text = resultMessage!!,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Button(
+                            onClick = {
+                                resultMessage = null
+                                if (isSuccess) {
+                                    onScanSuccess(manualToken)
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = cardColor),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if (isSuccess) "Continuar" else "Intentar de nuevo", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

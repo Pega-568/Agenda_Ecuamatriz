@@ -1,46 +1,42 @@
-# ============================================================
-# docker-compose.yml — Agenda Ecuamatriz
-# ============================================================
-# Servicios de infraestructura local para desarrollo.
-# NO incluye el servidor Flask (se ejecuta directamente con python run.py).
-#
-# Uso:
-#   docker compose up -d          → levantar servicios en background
-#   docker compose down           → detener y eliminar contenedores
-#   docker compose down -v        → también elimina volúmenes (borra datos)
-#   docker compose ps             → ver estado de servicios
-#   docker compose logs postgres  → ver logs de PostgreSQL
-# ============================================================
+version: '3.8'
 
 services:
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: agenda_ecuamatriz_db
-    restart: unless-stopped
-
+  web:
+    build: .
+    container_name: agenda_web
+    restart: always
+    ports:
+      - "5000:5000"
     environment:
-      POSTGRES_DB: agenda_ecuamatriz
-      POSTGRES_USER: agenda_user
-      POSTGRES_PASSWORD: agenda_password
-      PGDATA: /var/lib/postgresql/data/pgdata
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5000
+      - DATABASE_URL=postgresql+psycopg://agenda_user:agenda_password@db:5432/agenda_ecuamatriz
+      - SECRET_KEY=CAMBIAR_ESTO_EN_PRODUCCION_CON_UN_HASH_SEGURO
+      - APP_URL=http://localhost:5000
+    depends_on:
+      db:
+        condition: service_healthy
 
+  db:
+    image: postgres:15-alpine
+    container_name: agenda_db
+    restart: always
+    environment:
+      - POSTGRES_USER=agenda_user
+      - POSTGRES_PASSWORD=agenda_password
+      - POSTGRES_DB=agenda_ecuamatriz
     ports:
       - "5432:5432"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Script de inicialización: crea la BD de test automáticamente
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U agenda_user -d agenda_ecuamatriz"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
-# ─── Volúmenes persistentes ──────────────────────────────────────────────────
 volumes:
   postgres_data:
-    name: agenda_ecuamatriz_postgres_data
+    name: agenda_postgres_data

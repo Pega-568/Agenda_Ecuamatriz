@@ -21,8 +21,10 @@ object NavRoutes {
     const val MEETING_DETAIL = "meeting_detail/{id}"
     const val QR_SCANNER = "qr_scanner"
     const val NEW_MEETING = "new_meeting"
+    const val QR_DISPLAY = "qr_display/{id}"
 
     fun meetingDetail(id: Int) = "meeting_detail/$id"
+    fun qrDisplay(id: Int) = "qr_display/$id"
 }
 
 @Composable
@@ -77,6 +79,17 @@ fun AgendaNavGraph(
             val idStr = backStackEntry.arguments?.getString("id")
             val id = idStr?.toIntOrNull() ?: 0
             MeetingDetailScreen(
+                meetingId = id,
+                onBack = { navController.popBackStack() },
+                navigateToQrDisplay = { meetingId ->
+                    navController.navigate(NavRoutes.qrDisplay(meetingId))
+                }
+            )
+        }
+        composable(NavRoutes.QR_DISPLAY) { backStackEntry ->
+            val idStr = backStackEntry.arguments?.getString("id")
+            val id = idStr?.toIntOrNull() ?: 0
+            com.agenda.movil.ui.qr.QrDisplayScreen(
                 meetingId = id,
                 onBack = { navController.popBackStack() }
             )

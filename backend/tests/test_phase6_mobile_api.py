@@ -173,7 +173,7 @@ def test_api_mobile_accept_reject(client, regular_user, db_session, app):
         headers={"Authorization": f"Bearer {access_token}"}
     )
     assert response.status_code == 200
-    assert response.get_json()["data"]["invitation_status"] == InvitationStatus.ACCEPTED.value
+    assert response.get_json()["data"]["invitation_status"] == InvitationStatus.ACCEPTED
 
     # Para el rechazo, restablecemos a pendiente
     with app.app_context():
@@ -187,7 +187,7 @@ def test_api_mobile_accept_reject(client, regular_user, db_session, app):
         headers={"Authorization": f"Bearer {access_token}"}
     )
     assert response_reject.status_code == 200
-    assert response_reject.get_json()["data"]["invitation_status"] == InvitationStatus.REJECTED.value
+    assert response_reject.get_json()["data"]["invitation_status"] == InvitationStatus.REJECTED
 
 def test_api_mobile_qr_attendance_invalid_token(client, regular_user, db_session, app):
     with app.app_context():
@@ -201,4 +201,4 @@ def test_api_mobile_qr_attendance_invalid_token(client, regular_user, db_session
     assert response.status_code == 400
     data = response.get_json()
     assert data["success"] is False
-    assert "Token QR inválido" in data["error"]
+    assert "Token QR inválido" in data["error"]["message"]

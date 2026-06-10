@@ -3,87 +3,92 @@
 {% block page_title %}Detalle de Reunión (Secretaría){% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: var(--spacing-6);">
-  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <h3>{{ meeting.title }}</h3>
-    <span class="badge badge-info">{{ meeting.status | capitalize }}</span>
-  </div>
-  <div class="card-body">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4);">
-      <div>
-        <p><strong>Fecha y Hora:</strong> {{ meeting.date.strftime('%Y-%m-%d') }} {{ meeting.start_time.strftime('%H:%M') }} - {{ meeting.end_time.strftime('%H:%M') }}</p>
-        <p><strong>Sala:</strong> {{ meeting.room.name if meeting.room else 'Virtual' }}</p>
-      </div>
-      <div>
-        <p><strong>Organizador:</strong> {{ meeting.creator.full_name }}</p>
-        <p><strong>Creado el:</strong> {{ meeting.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-      </div>
+<div class="grid grid-cols-1 gap-6 mb-6">
+  <!-- General Info Card -->
+  <div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-outline-variant flex flex-col md:flex-row justify-between items-start md:items-center bg-surface-container-low gap-4">
+      <h3 class="font-title-large text-title-large text-on-surface">{{ meeting.title }}</h3>
+      <span class="inline-block px-3 py-1 rounded-full text-label-sm font-bold bg-primary-container text-on-primary-container">{{ meeting.status | capitalize }}</span>
     </div>
-    {% if meeting.description %}
-    <p style="margin-top: var(--spacing-4);"><strong>Descripción:</strong><br>{{ meeting.description }}</p>
-    {% endif %}
+    <div class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <p class="mb-2"><strong class="text-primary font-semibold">Fecha y Hora:</strong> <span class="text-on-surface-variant">{{ meeting.date.strftime('%Y-%m-%d') }} {{ meeting.start_time.strftime('%H:%M') }} - {{ meeting.end_time.strftime('%H:%M') }}</span></p>
+          <p><strong class="text-primary font-semibold">Sala:</strong> <span class="text-on-surface-variant">{{ meeting.room.name if meeting.room else 'Virtual' }}</span></p>
+        </div>
+        <div>
+          <p class="mb-2"><strong class="text-primary font-semibold">Organizador:</strong> <span class="text-on-surface-variant">{{ meeting.creator.full_name }}</span></p>
+          <p><strong class="text-primary font-semibold">Creado el:</strong> <span class="text-on-surface-variant">{{ meeting.created_at.strftime('%Y-%m-%d %H:%M') }}</span></p>
+        </div>
+      </div>
+      {% if meeting.description %}
+      <div class="mt-6 pt-6 border-t border-surface-variant">
+        <strong class="text-primary font-semibold block mb-2">Descripción:</strong>
+        <p class="text-on-surface-variant whitespace-pre-line">{{ meeting.description }}</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
-</div>
 
-<div class="card">
-  <div class="card-header">
-    <h3>Auditoría de Asistencia y Participantes</h3>
-  </div>
-  <div class="card-body">
-    <div class="table-container">
-      <table class="table">
+  <!-- Auditoría de Asistencia -->
+  <div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+    <div class="p-6 border-b border-outline-variant bg-surface-container-low">
+      <h3 class="font-title-large text-title-large text-on-surface">Auditoría de Asistencia y Participantes</h3>
+    </div>
+    <div class="p-0 overflow-x-auto">
+      <table class="w-full text-left border-collapse">
         <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Invitación</th>
-            <th>Asistencia</th>
-            <th>Acción Manual</th>
+          <tr class="bg-surface-container-lowest border-b border-outline-variant text-on-surface-variant font-label-lg uppercase">
+            <th class="p-4 font-bold">Nombre</th>
+            <th class="p-4 font-bold">Email</th>
+            <th class="p-4 font-bold text-center">Invitación</th>
+            <th class="p-4 font-bold text-center">Asistencia</th>
+            <th class="p-4 font-bold text-center">Acción Manual</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-surface-variant">
           {% for participant in meeting.participants %}
-          <tr>
-            <td>{{ participant.user.full_name }}</td>
-            <td>{{ participant.user.email }}</td>
-            <td>
+          <tr class="hover:bg-surface-bright transition-colors">
+            <td class="p-4 text-body-md font-bold text-on-surface">{{ participant.user.full_name }}</td>
+            <td class="p-4 text-body-md text-on-surface-variant">{{ participant.user.email }}</td>
+            <td class="p-4 text-center">
               {% if participant.invitation_status == 'accepted' %}
-                <span class="badge badge-success">Aceptado</span>
+                <span class="inline-block px-3 py-1 rounded-full bg-success-container text-on-success-container text-label-sm font-bold">Aceptado</span>
               {% elif participant.invitation_status == 'pending' %}
-                <span class="badge badge-warning">Pendiente</span>
+                <span class="inline-block px-3 py-1 rounded-full bg-warning-container text-on-warning-container text-label-sm font-bold">Pendiente</span>
               {% elif participant.invitation_status == 'rejected' %}
-                <span class="badge badge-danger">Rechazado</span>
+                <span class="inline-block px-3 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-bold">Rechazado</span>
               {% else %}
-                <span class="badge badge-gray">{{ participant.invitation_status }}</span>
+                <span class="inline-block px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant text-label-sm font-bold">{{ participant.invitation_status }}</span>
               {% endif %}
             </td>
-            <td>
+            <td class="p-4 text-center">
               {% if participant.attendance_status == 'present' %}
-                <span style="color: var(--color-success);">✔ Presente</span>
+                <span class="text-success font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">check_circle</span> Presente</span>
               {% elif participant.attendance_status == 'absent' %}
-                <span style="color: var(--color-danger);">✖ Ausente</span>
+                <span class="text-error font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">cancel</span> Ausente</span>
               {% elif participant.attendance_status == 'justified' %}
-                <span style="color: var(--color-info);">Justificado</span>
+                <span class="text-info font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">info</span> Justificado</span>
               {% else %}
-                <span style="color: var(--color-gray-400);">Sin Marcar</span>
+                <span class="text-on-surface-variant flex items-center justify-center gap-1"><span class="material-symbols-outlined text-sm">help</span> Sin Marcar</span>
               {% endif %}
             </td>
-            <td>
+            <td class="p-4 text-center">
               {% if participant.attendance_status == 'not_marked' %}
-              <form method="POST" action="{{ url_for('web_secretary.mark_manual_attendance', meeting_id=meeting.id) }}" style="display: flex; gap: 0.5rem; align-items: center;">
+              <form method="POST" action="{{ url_for('web_secretary.mark_manual_attendance', meeting_id=meeting.id) }}" class="flex items-center justify-center gap-2">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="user_id" value="{{ participant.user_id }}">
-                <select name="status" class="form-control" style="width: auto; padding: 0.2rem;" required>
+                <select name="status" class="bg-surface-container border border-outline rounded-md px-2 py-1 text-sm focus:ring-1 focus:ring-primary focus:outline-none" required>
                   <option value="">Seleccionar...</option>
                   <option value="present">Presente</option>
                   <option value="absent">Ausente</option>
                   <option value="justified">Justificado</option>
                 </select>
-                <input type="text" name="comment" placeholder="Comentario..." class="form-control" style="width: 120px; padding: 0.2rem;">
-                <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+                <input type="text" name="comment" placeholder="Comentario..." class="bg-surface-container border border-outline rounded-md px-2 py-1 text-sm w-28 focus:ring-1 focus:ring-primary focus:outline-none">
+                <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-3 py-1 rounded-md text-sm font-bold transition-colors">Guardar</button>
               </form>
               {% else %}
-                <span style="font-size: 0.8rem; color: var(--color-gray-500);">Marcada: {{ participant.attendance_marked_at.strftime('%H:%M') if participant.attendance_marked_at else '' }}</span>
+                <span class="text-xs text-on-surface-variant">Marcada: {{ participant.attendance_marked_at.strftime('%H:%M') if participant.attendance_marked_at else '' }}</span>
               {% endif %}
             </td>
           </tr>

@@ -103,4 +103,7 @@ dependencies {
   // ML Kit
   implementation(libs.mlkit.barcode.scanning)
   implementation(libs.guava)
+
+  // Image Loading (Coil)
+  implementation(libs.coil.compose)
 }

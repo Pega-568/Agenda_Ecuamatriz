@@ -82,6 +82,23 @@ def get_meeting_options():
         traceback.print_exc()
         return error_response(str(e), 400)
 
+@mobile_meetings_bp.route("/check-availability", methods=["POST"])
+@jwt_required()
+def check_availability():
+    """POST /api/mobile/meetings/check-availability"""
+    from app.availability.service import AvailabilityService
+    from app.availability.schemas import AvailabilityCheckSchema
+    from marshmallow import ValidationError
+    try:
+        user = _current_user()
+        payload = AvailabilityCheckSchema().load(request.get_json(silent=True) or {})
+        result = AvailabilityService.check(payload, creator_id=user.id)
+        return success_response(data=result)
+    except ValidationError as exc:
+        return validation_error_response(exc.messages)
+    except PermissionError as e:
+        return error_response(str(e), 403)
+
 @mobile_meetings_bp.route("", methods=["POST"])
 @jwt_required()
 def create_meeting():

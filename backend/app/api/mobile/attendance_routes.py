@@ -27,6 +27,18 @@ def mark_attendance_qr(token):
     except ValueError as e:
         return error_response(str(e), 400)
 
+@mobile_attendance_bp.route("/meeting/<int:meeting_id>/qr-token", methods=["GET"])
+@jwt_required()
+def get_qr_token(meeting_id):
+    """GET /api/mobile/attendance/meeting/<id>/qr-token"""
+    try:
+        data = AttendanceService.generate_or_get_attendance_token(meeting_id, _current_user())
+        return success_response(data=data)
+    except PermissionError as e:
+        return error_response(str(e), 403)
+    except ValueError as e:
+        return error_response(str(e), 400)
+
 @mobile_attendance_bp.route("/meeting/<int:meeting_id>/my-status", methods=["GET"])
 @jwt_required()
 def get_my_status(meeting_id):

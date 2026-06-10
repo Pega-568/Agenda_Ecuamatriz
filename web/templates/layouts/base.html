@@ -1,44 +1,46 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Agenda Ecuamatriz{% endblock %}</title>
   
-  <!-- Estilos Corporativos -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
-  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <!-- Estilos base ad-hoc -->
+  <style>
+      body { font-family: 'Inter', sans-serif; background-color: #F5F7FA; }
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+      .sidebar-active-bar { position: absolute; left: 0; width: 4px; height: 100%; background-color: #00152a; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+  </style>
+
   {% block extra_css %}{% endblock %}
 </head>
-<body>
-  <div class="layout-wrapper">
-    <!-- Sidebar Partial -->
-    {% include 'layouts/partials/sidebar.html' %}
+<body class="bg-background text-on-background">
+  <!-- Sidebar Partial -->
+  {% include 'layouts/partials/sidebar.html' %}
+  
+  <!-- Top Navigation Bar Partial -->
+  {% include 'layouts/partials/topbar.html' %}
+  
+  <!-- Main Content Canvas -->
+  <main class="ml-[260px] pt-[64px] min-h-screen p-container-padding">
+    <!-- Flashes Partial -->
+    {% include 'layouts/partials/flashes.html' %}
     
-    <!-- Main Content Area -->
-    <div class="main-content">
-      <!-- Topbar Partial -->
-      {% include 'layouts/partials/topbar.html' %}
-      
-      <!-- Page Content -->
-      <main class="page-content">
-        <!-- Flashes Partial -->
-        {% include 'layouts/partials/flashes.html' %}
-        
-        <div class="page-header">
-          <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
-          <div class="page-actions">
-            {% block page_actions %}{% endblock %}
-          </div>
-        </div>
-        
-        {% block content %}{% endblock %}
-      </main>
+    <div class="mb-stack-lg">
+      <h2 class="font-page-title text-page-title text-primary">{% block page_title %}{% endblock %}</h2>
+      <div class="page-actions mt-2">
+        {% block page_actions %}{% endblock %}
+      </div>
     </div>
-  </div>
+    
+    {% block content %}{% endblock %}
+  </main>
   
   {% block extra_js %}{% endblock %}
 </body>

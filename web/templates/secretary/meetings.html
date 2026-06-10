@@ -3,55 +3,58 @@
 {% block page_title %}Calendario Institucional{% endblock %}
 
 {% block content %}
-<div class="card">
-  <div class="card-header">
-    <h3>Reuniones Programadas</h3>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+  <div class="p-6 border-b border-outline-variant bg-surface-container-low">
+    <h3 class="font-title-large text-title-large text-on-surface">Reuniones Programadas</h3>
   </div>
-  <div class="card-body">
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Título</th>
-            <th>Fecha y Hora</th>
-            <th>Organizador</th>
-            <th>Sala</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for meeting in meetings %}
-          <tr>
-            <td>{{ meeting.title }}</td>
-            <td>{{ meeting.date.strftime('%Y-%m-%d') if meeting.date else '' }} {{ meeting.start_time.strftime('%H:%M') if meeting.start_time else '' }}</td>
-            <td>{{ meeting.creator.full_name }}</td>
-            <td>{{ meeting.room.name if meeting.room else 'N/A' }}</td>
-            <td>
-              {% if meeting.status == 'scheduled' %}
-                <span class="badge badge-success">Agendada</span>
-              {% elif meeting.status == 'completed' %}
-                <span class="badge badge-info">Completada</span>
-              {% elif meeting.status == 'cancelled' %}
-                <span class="badge badge-danger">Cancelada</span>
-              {% elif meeting.status == 'rescheduled' %}
-                <span class="badge badge-warning">Reprogramada</span>
-              {% else %}
-                <span class="badge badge-gray">{{ meeting.status }}</span>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{{ url_for('web_secretary.meeting_detail', meeting_id=meeting.id) }}" class="btn btn-sm btn-secondary">Ver Detalle</a>
-            </td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="6" style="text-align: center;">No hay reuniones registradas en el sistema.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="p-0 overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-container-lowest border-b border-outline-variant text-on-surface-variant font-label-lg uppercase">
+          <th class="p-4 font-bold">Título</th>
+          <th class="p-4 font-bold">Fecha y Hora</th>
+          <th class="p-4 font-bold">Organizador</th>
+          <th class="p-4 font-bold">Sala</th>
+          <th class="p-4 font-bold text-center">Estado</th>
+          <th class="p-4 font-bold text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-variant">
+        {% for meeting in meetings %}
+        <tr class="hover:bg-surface-bright transition-colors">
+          <td class="p-4 text-body-md font-bold text-on-surface">{{ meeting.title }}</td>
+          <td class="p-4 text-body-md text-on-surface-variant">{{ meeting.date.strftime('%Y-%m-%d') if meeting.date else '' }} {{ meeting.start_time.strftime('%H:%M') if meeting.start_time else '' }}</td>
+          <td class="p-4 text-body-md text-on-surface-variant">{{ meeting.creator.full_name }}</td>
+          <td class="p-4 text-body-md text-on-surface-variant">{{ meeting.room.name if meeting.room else 'N/A' }}</td>
+          <td class="p-4 text-center">
+            {% if meeting.status == 'scheduled' %}
+              <span class="inline-block px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-label-sm font-bold">Agendada</span>
+            {% elif meeting.status == 'completed' %}
+              <span class="inline-block px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-label-sm font-bold">Completada</span>
+            {% elif meeting.status == 'cancelled' %}
+              <span class="inline-block px-3 py-1 rounded-full bg-error-container text-on-error-container text-label-sm font-bold">Cancelada</span>
+            {% elif meeting.status == 'rescheduled' %}
+              <span class="inline-block px-3 py-1 rounded-full bg-tertiary-container text-on-tertiary-container text-label-sm font-bold">Reprogramada</span>
+            {% else %}
+              <span class="inline-block px-3 py-1 rounded-full bg-surface-variant text-on-surface-variant text-label-sm font-bold">{{ meeting.status }}</span>
+            {% endif %}
+          </td>
+          <td class="p-4 text-center">
+            <a href="{{ url_for('web_secretary.meeting_detail', meeting_id=meeting.id) }}" class="inline-block bg-surface-variant hover:bg-outline-variant text-on-surface-variant font-bold text-label-lg px-4 py-2 rounded-full transition-colors">
+              Ver Detalle
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" class="p-8 text-center text-on-surface-variant">
+            <span class="material-symbols-outlined text-[48px] mb-2 opacity-50">event_busy</span>
+            <p>No hay reuniones registradas en el sistema.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 {% endblock %}

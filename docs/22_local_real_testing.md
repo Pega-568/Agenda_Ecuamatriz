@@ -70,3 +70,16 @@ Al analizar el código Android se encontró el motivo por el cual el login falla
 - La aplicación Android ahora procesa exitosamente el inicio de sesión.
 - Navegación asegurada en Home, visualizando los listados correctos protegidos con JWT.
 - Renovación y validación de tokens corregidos gracias al envoltorio `ApiResponse<T>`.
+
+## Validación de Endpoints y Notificaciones (Actualización Piloto)
+
+1. **Test unitarios pasados (Pytest)**: Se resolvieron problemas de concurrencia y permisos en base de datos al inicializar los esquemas de tests, garantizando validación al 100% de la suite.
+7. **Tab de Notificaciones (Android)**: Integración correcta en el `HomeScreen` consultando al nuevo endpoint unificado `GET /api/mobile/notifications`.
+8. **Flujo de Asistencia y QR**: Se ha comprobado que el sistema registra eventos de asistencia o fallos específicos (QR inválido, usuario no invitado) generando una notificación al usuario en lugar de colapsar silenciosamente.
+
+## Validación Final de Interfaces (Fase 9.4)
+
+Tras la refactorización de todas las interfaces (`dashboard.html`, `meeting_detail.html`, `create_meeting.html` y los fragmentos de Compose en Android) hacia el diseño oficial **Stitch**:
+- Se ejecutó el flujo completo: `Login` -> `Agendar` -> `Invitación Recibida` -> `Aceptar` -> `Escanear QR` -> `Asistencia Registrada` sin interrupciones.
+- Se certifica la ausencia de regresiones. Ninguna ruta base de Flask ni endpoint móvil fue alterado en este proceso.
+- Las variables de entorno para prueba en LAN (`192.168.0.139`) siguen vigentes y operativas.

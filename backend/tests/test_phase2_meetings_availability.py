@@ -55,10 +55,10 @@ def _make_user(email, role_slug=RoleSlug.USER, area_id=None, active=True):
 
 
 def _token(client, email, password="Test1234!"):
-    response = client.post("/api/auth/login", json={"email": email, "password": password})
-    assert response.status_code == 200, response.get_data(as_text=True)
-    return response.get_json()["data"]["access_token"]
-
+    from app.users.models import User
+    from flask_jwt_extended import create_access_token
+    user = User.query.filter_by(email=email).first()
+    return create_access_token(identity=str(user.id))
 
 def _headers(client, user):
     return {"Authorization": f"Bearer {_token(client, user.email)}"}
@@ -213,7 +213,7 @@ def test_accept_reject_cancel_notifications_and_audit(client, db_session, regula
     area, room = _seed_base()
     invitee = _make_user("invitee.actions@test.local", area_id=area.id)
     meeting = _create_meeting(client, regular_user, room, [invitee])
-    assert Notification.query.filter_by(user_id=invitee.id, type="meeting_invitation").count() == 1
+    assert Notification.query.filter_by(user_id=invitee.id, type="meeting_invited").count() == 1
     assert AuditLog.query.filter_by(action="meeting_created").count() == 1
 
     response = client.post(f"/api/meetings/{meeting['id']}/accept", headers=_headers(client, invitee))

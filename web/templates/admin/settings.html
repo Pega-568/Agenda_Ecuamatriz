@@ -3,21 +3,24 @@
 {% block page_title %}Configuración del Sistema{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width: 600px;">
-  <div class="card-body">
-    <form method="POST" action="{{ url_for('web_admin.settings') }}">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden max-w-2xl">
+  <div class="p-6 border-b border-outline-variant bg-surface-container-low">
+    <h3 class="font-title-large text-title-large text-on-surface">Ajustes Globales</h3>
+  </div>
+  <div class="p-6">
+    <form method="POST" action="{{ url_for('web_admin.settings') }}" class="space-y-6">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       
       {% for setting in settings %}
-      <div class="form-group" style="margin-bottom: 1rem;">
-        <label for="{{ setting.key }}" class="form-label" style="font-weight: 600;">{{ setting.key }}</label>
-        <p style="font-size: 0.8rem; color: var(--color-gray-600); margin: 0 0 0.5rem 0;">{{ setting.description }}</p>
-        <input type="text" id="{{ setting.key }}" name="{{ setting.key }}" class="form-control" value="{{ setting.value }}">
+      <div>
+        <label for="{{ setting.key }}" class="block font-label-lg text-label-lg text-on-surface mb-1">{{ setting.key }}</label>
+        <p class="text-body-sm text-on-surface-variant mb-2">{{ setting.description }}</p>
+        <input type="text" id="{{ setting.key }}" name="{{ setting.key }}" class="w-full bg-surface-container border border-outline rounded-lg px-4 py-2 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" value="{{ setting.value }}">
       </div>
       {% endfor %}
       
-      <div class="form-group" style="margin-top: var(--spacing-6);">
-        <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+      <div class="pt-4 border-t border-outline-variant">
+        <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-button-text text-button-text rounded-full px-8 py-3 transition-colors">Guardar Configuración</button>
       </div>
     </form>
   </div>

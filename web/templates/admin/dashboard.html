@@ -2,26 +2,35 @@
 
 {% block page_title %}Dashboard de Administrador{% endblock %}
 
+{% block page_actions %}
+<p class="font-body-md text-body-md text-on-surface-variant">Bienvenido al panel de administración de Agenda Ecuamatriz.</p>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-  <div class="card-header">
-    <h3>Resumen del Sistema</h3>
+<div class="grid grid-cols-12 gap-6 mb-stack-lg">
+  <!-- Usuarios -->
+  <div class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start">
+      <div class="p-3 bg-primary-container rounded-xl">
+        <span class="material-symbols-outlined text-on-primary-container">group</span>
+      </div>
+    </div>
+    <div class="mt-4">
+      <p class="text-[28px] font-black text-primary">--</p>
+      <p class="font-body-md text-body-md text-on-surface-variant">Usuarios Activos</p>
+    </div>
   </div>
-  <div class="card-body">
-    <p>Bienvenido al panel de administración de Agenda Ecuamatriz.</p>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-4);">
-      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
-        <div class="card-body">
-          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Usuarios</h4>
-          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
-        </div>
+  
+  <!-- Salas -->
+  <div class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start">
+      <div class="p-3 bg-secondary-container rounded-xl">
+        <span class="material-symbols-outlined text-on-secondary-container">meeting_room</span>
       </div>
-      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
-        <div class="card-body">
-          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Salas</h4>
-          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
-        </div>
-      </div>
+    </div>
+    <div class="mt-4">
+      <p class="text-[28px] font-black text-primary">--</p>
+      <p class="font-body-md text-body-md text-on-surface-variant">Salas Disponibles</p>
     </div>
   </div>
 </div>

@@ -19,6 +19,14 @@ class NotificationType:
     TECHNICAL_SHEET_PENDING = "technical_sheet_pending"
     INSTITUTIONAL_EVENT_CREATED = "institutional_event_created"
     NON_WORKING_DAY_ADDED = "non_working_day_added"
+    # Nuevos eventos para el piloto
+    MEETING_INVITED = "meeting_invited"
+    MEETING_RESPONSE_REMINDER = "meeting_response_reminder"
+    MEETING_STARTING_SOON = "meeting_starting_soon"
+    ATTENDANCE_MARKED = "attendance_marked"
+    ATTENDANCE_ALREADY_MARKED = "attendance_already_marked"
+    QR_INVALID = "qr_invalid"
+    QR_NOT_ALLOWED = "qr_not_allowed"
 
     ALL = [
         INVITATION_RECEIVED,
@@ -31,6 +39,13 @@ class NotificationType:
         TECHNICAL_SHEET_PENDING,
         INSTITUTIONAL_EVENT_CREATED,
         NON_WORKING_DAY_ADDED,
+        MEETING_INVITED,
+        MEETING_RESPONSE_REMINDER,
+        MEETING_STARTING_SOON,
+        ATTENDANCE_MARKED,
+        ATTENDANCE_ALREADY_MARKED,
+        QR_INVALID,
+        QR_NOT_ALLOWED,
     ]
 
 

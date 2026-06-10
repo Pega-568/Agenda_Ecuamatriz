@@ -33,11 +33,11 @@ def test_logout(client, admin_user):
     assert response.status_code == 302
 
 
-def test_api_login_and_me(client, admin_user):
-    response = client.post("/api/auth/login", json={"email": admin_user.email, "password": "Test1234!"})
+def test_api_login_and_me(client, regular_user):
+    response = client.post("/api/auth/login", json={"email": regular_user.email, "password": "Test1234!"})
     assert response.status_code == 200
     token = response.get_json()["data"]["access_token"]
 
     me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me.status_code == 200
-    assert me.get_json()["data"]["email"] == admin_user.email
+    assert me.get_json()["data"]["email"] == regular_user.email

@@ -38,8 +38,21 @@ def dashboard():
 @web_user_bp.route("/meetings", methods=["GET"])
 def meetings():
     from app.meetings.service import MeetingService
-    meetings_list = MeetingService.list_for_user(current_user, {"created_by_me": True})
-    return render_template("user/meetings.html", meetings=meetings_list)
+    # Mostrar todas las reuniones del usuario (creadas por él o a las que fue invitado)
+    meetings_list = MeetingService.list_for_user(current_user, {})
+    
+    # Filtrar solo las que creó o aceptó (ocultar rechazadas o pendientes si no es el creador)
+    filtered_list = []
+    for m in meetings_list:
+        if m.created_by_user_id == current_user.id:
+            filtered_list.append(m)
+        else:
+            # Buscar el participant
+            participant = next((p for p in m.participants if p.user_id == current_user.id), None)
+            if participant and participant.invitation_status == "accepted":
+                filtered_list.append(m)
+
+    return render_template("user/meetings.html", meetings=filtered_list)
 
 @web_user_bp.route("/meetings/create", methods=["GET", "POST"])
 def create_meeting():
@@ -146,3 +159,19 @@ def action_meeting(meeting_id):
         flash(str(e), "danger")
         
     return redirect(url_for("web_user.dashboard"))
+
+@web_user_bp.route("/meetings/check-availability", methods=["POST"])
+def check_availability():
+    from app.availability.service import AvailabilityService
+    from app.availability.schemas import AvailabilityCheckSchema
+    from marshmallow import ValidationError
+    from flask import jsonify
+    
+    try:
+        payload = AvailabilityCheckSchema().load(request.get_json(silent=True) or {})
+        result = AvailabilityService.check(payload, creator_id=current_user.id)
+        return jsonify({"success": True, "data": result}), 200
+    except ValidationError as exc:
+        return jsonify({"success": False, "error": {"message": "Datos inválidos", "details": exc.messages}}), 422
+    except Exception as exc:
+        return jsonify({"success": False, "error": {"message": str(exc)}}), 400
