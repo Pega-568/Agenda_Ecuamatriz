@@ -3,29 +3,25 @@
 {% block page_title %}QR de Asistencia{% endblock %}
 
 {% block content %}
-<div class="layout-centered" style="min-height: auto; padding: 0;">
-  <div class="card" style="width: 100%; max-width: 500px; text-align: center;">
-    <div class="card-header">
-      <h3>{{ meeting.title }}</h3>
-      <p style="margin-bottom: 0; color: var(--color-gray-700); font-size: 0.875rem;">Escanea este código para registrar tu asistencia</p>
+<div class="flex items-center justify-center min-h-[60vh] py-8">
+  <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm w-full max-w-md text-center overflow-hidden">
+    <div class="p-6 border-b border-outline-variant bg-surface-container-low">
+      <h3 class="font-title-large text-title-large text-on-surface mb-2">{{ meeting.title }}</h3>
+      <p class="text-body-md text-on-surface-variant">Escanea este código para registrar tu asistencia</p>
     </div>
-    <div class="card-body" style="padding: var(--spacing-8);">
-      
-      <!-- Contenedor del QR (se generaría con JS en frontend o se renderizaría como imagen en backend) -->
-      <div id="qr-container" style="display: inline-block; padding: var(--spacing-4); background-color: white; border: 1px solid var(--color-gray-300); border-radius: var(--border-radius-lg);">
-        <img src="{{ qr_image_url }}" alt="Código QR" style="max-width: 100%; height: auto;">
+    <div class="p-8 bg-white flex flex-col items-center">
+      <!-- Contenedor del QR -->
+      <div class="p-4 border-2 border-outline-variant rounded-xl inline-block mb-6">
+        <img src="{{ qr_image_url }}" alt="Código QR" class="w-48 h-48 object-contain">
       </div>
       
-      <div style="margin-top: var(--spacing-6);">
-        {% if qr_payload %}
-          <p style="font-weight: 600; font-size: 1.25rem; word-break: break-all;">QR Payload: {{ qr_payload }}</p>
-        {% endif %}
-        <p style="font-size: 0.875rem; color: var(--color-gray-700);">Válido hasta: {{ valid_until }}</p>
-      </div>
-
+      {% if qr_payload %}
+        <p class="font-bold text-lg break-all text-on-surface mb-2">Payload: <span class="font-mono bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-sm">{{ qr_payload }}</span></p>
+      {% endif %}
+      <p class="text-label-sm font-bold uppercase tracking-wider text-error mt-2">Válido hasta: {{ valid_until }}</p>
     </div>
-    <div class="card-footer">
-      <a href="{{ url_for('web_user.meeting_detail', meeting_id=meeting.id) }}" class="btn btn-secondary">Volver al Detalle</a>
+    <div class="p-6 bg-surface-container-low border-t border-outline-variant">
+      <a href="{{ url_for('web_user.meeting_detail', meeting_id=meeting.id) }}" class="inline-block bg-surface-variant hover:bg-outline-variant text-on-surface-variant font-bold text-label-lg px-6 py-3 rounded-full transition-colors w-full">Volver al Detalle</a>
     </div>
   </div>
 </div>

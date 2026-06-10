@@ -1,0 +1,32 @@
+.git
+.gitignore
+.env
+.env.example
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+env.bak/
+venv.bak/
+.pytest_cache/
+tests/
+docs/
+
+# Frontend assets
+web/node_modules/
+web/npm-debug.log
+
+# Databases locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Directorios de subida y temporales si existen en local
+backend/app/attendance/generated_qr/*
+backend/app/reports/exports/*
+!backend/app/attendance/generated_qr/.gitkeep
+!backend/app/reports/exports/.gitkeep

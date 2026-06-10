@@ -18,18 +18,20 @@
       
       {% if unread_notifications|length > 0 %}
       <!-- Dropdown Notificaciones -->
-      <div class="hidden group-hover:block absolute right-0 top-full mt-2 w-[300px] bg-surface border border-outline-variant rounded-xl shadow-md z-50">
-        <div class="p-4 border-b border-outline-variant">
-          <h4 class="font-bold text-primary">Notificaciones</h4>
+      <div class="hidden group-hover:block absolute right-0 top-full pt-2 w-[300px] z-50">
+        <div class="bg-surface border border-outline-variant rounded-xl shadow-md overflow-hidden">
+          <div class="p-4 border-b border-outline-variant">
+            <h4 class="font-bold text-primary">Notificaciones</h4>
+          </div>
+          <ul class="max-h-[300px] overflow-y-auto">
+            {% for note in unread_notifications %}
+            <li class="p-4 border-b border-surface-variant hover:bg-surface-bright transition-colors cursor-pointer" onclick="alert('{{ note.title }}\n\n{{ note.message | replace('\n', ' ') | replace('\'', '\\\'') | replace('\"', '\\\"') }}')">
+              <p class="font-bold text-sm text-on-surface">{{ note.title }}</p>
+              <p class="text-xs text-on-surface-variant mt-1 line-clamp-2">{{ note.message }}</p>
+            </li>
+            {% endfor %}
+          </ul>
         </div>
-        <ul class="max-h-[300px] overflow-y-auto">
-          {% for note in unread_notifications %}
-          <li class="p-4 border-b border-surface-variant hover:bg-surface-bright transition-colors cursor-pointer">
-            <p class="font-bold text-sm text-on-surface">{{ note.title }}</p>
-            <p class="text-xs text-on-surface-variant mt-1">{{ note.message }}</p>
-          </li>
-          {% endfor %}
-        </ul>
       </div>
       {% endif %}
     </div>

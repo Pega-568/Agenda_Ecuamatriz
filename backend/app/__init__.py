@@ -87,6 +87,12 @@ def create_app(config_object=None):
     # ─── Endpoint /health ─────────────────────────────────────────────────
     _register_health_endpoint(app)
 
+    # ─── Endpoint raíz / ──────────────────────────────────────────────────
+    @app.route("/")
+    def index():
+        from flask import redirect, url_for
+        return redirect(url_for("auth_web.login_form"))
+
     # ─── Registrar manejadores de error globales ──────────────────────────
     _register_error_handlers(app)
 

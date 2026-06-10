@@ -1,51 +1,30 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Login - Agenda Ecuamatriz{% endblock %}</title>
   
-  <!-- Estilos Corporativos -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   
   <style>
-    /* Estilos específicos para login */
-    .login-container {
-      width: 100%;
-      max-width: 400px;
-    }
-    .login-logo {
-      text-align: center;
-      margin-bottom: var(--spacing-6);
-    }
-    .login-logo h1 {
-      color: var(--color-primary);
-      margin-bottom: 0;
-    }
-    .login-logo p {
-      color: var(--color-gray-700);
-      font-size: 0.875rem;
-    }
+      body { font-family: 'Inter', sans-serif; }
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
   </style>
 </head>
-<body>
-  <div class="layout-centered">
-    <div class="login-container">
-      <div class="login-logo">
-        <h1>Ecuamatriz</h1>
-        <p>Sistema de Gestión de Agendas</p>
-      </div>
-      
-      {% include 'layouts/partials/flashes.html' %}
-      
-      <div class="card">
-        <div class="card-body">
-          {% block content %}{% endblock %}
-        </div>
-      </div>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-[400px]">
+    <div class="text-center mb-8">
+      <h1 class="font-page-title text-page-title text-primary mb-1">Ecuamatriz</h1>
+      <p class="text-body-md text-on-surface-variant">Sistema de Gestión de Agendas</p>
+    </div>
+    
+    {% include 'layouts/partials/flashes.html' %}
+    
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm p-8">
+      {% block content %}{% endblock %}
     </div>
   </div>
 </body>

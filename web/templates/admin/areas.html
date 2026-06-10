@@ -3,52 +3,52 @@
 {% block page_title %}Gestión de Áreas{% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 2rem;">
-  <div class="card-body">
-    <h3 style="margin-bottom: 1rem;">Nueva Área</h3>
-    <form method="POST" action="{{ url_for('web_admin.areas') }}" class="form-group">
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm mb-8 overflow-hidden">
+  <div class="p-6 border-b border-outline-variant bg-surface-container-low">
+    <h3 class="font-title-large text-title-large text-on-surface">Nueva Área</h3>
+  </div>
+  <div class="p-6">
+    <form method="POST" action="{{ url_for('web_admin.areas') }}" class="space-y-6">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label>Nombre del Área</label>
-          <input type="text" name="name" class="form-control" required>
+          <label class="block font-label-sm text-label-sm text-on-surface mb-2">Nombre del Área</label>
+          <input type="text" name="name" class="w-full bg-surface-container border border-outline rounded-lg px-4 py-2 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" required>
         </div>
         <div>
-          <label>Descripción</label>
-          <input type="text" name="description" class="form-control">
+          <label class="block font-label-sm text-label-sm text-on-surface mb-2">Descripción</label>
+          <input type="text" name="description" class="w-full bg-surface-container border border-outline rounded-lg px-4 py-2 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
         </div>
       </div>
-      <div style="margin-top: 1rem;">
-        <button type="submit" class="btn btn-primary">Crear Área</button>
+      <div class="pt-2">
+        <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-button-text text-button-text rounded-full px-6 py-2 transition-colors">Crear Área</button>
       </div>
     </form>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-body">
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Nombre del Área</th>
-            <th>Descripción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for area in areas %}
-          <tr>
-            <td>{{ area.name }}</td>
-            <td>{{ area.description or 'N/A' }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <td colspan="2" style="text-align: center;">No hay áreas registradas.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+<div class="bg-surface border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+  <div class="p-0 overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-container-lowest border-b border-outline-variant text-on-surface-variant font-label-lg uppercase">
+          <th class="p-4 font-bold">Nombre del Área</th>
+          <th class="p-4 font-bold">Descripción</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-variant">
+        {% for area in areas %}
+        <tr class="hover:bg-surface-bright transition-colors">
+          <td class="p-4 text-body-md font-bold text-on-surface">{{ area.name }}</td>
+          <td class="p-4 text-body-md text-on-surface-variant">{{ area.description or 'N/A' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="2" class="p-8 text-center text-on-surface-variant">No hay áreas registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 {% endblock %}

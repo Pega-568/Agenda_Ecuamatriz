@@ -1,21 +1,21 @@
 {% extends "layouts/auth.html" %}
 
 {% block content %}
-<form method="POST" action="{{ url_for('auth_web.login_submit') }}">
+<form method="POST" action="{{ url_for('auth_web.login_submit') }}" class="space-y-5">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   
-  <div class="form-group">
-    <label for="email" class="form-label">Correo Electrónico</label>
-    <input type="email" id="email" name="email" class="form-control" required placeholder="tu@ecuamatriz.com">
+  <div>
+    <label for="email" class="block font-label-sm text-label-sm text-on-surface mb-2">Correo Electrónico</label>
+    <input type="email" id="email" name="email" class="w-full bg-surface-container-low border border-outline rounded-lg px-4 py-3 text-body-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" required placeholder="tu@ecuamatriz.com">
   </div>
   
-  <div class="form-group">
-    <label for="password" class="form-label">Contraseña</label>
-    <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+  <div>
+    <label for="password" class="block font-label-sm text-label-sm text-on-surface mb-2">Contraseña</label>
+    <input type="password" id="password" name="password" class="w-full bg-surface-container-low border border-outline rounded-lg px-4 py-3 text-body-lg text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" required placeholder="••••••••">
   </div>
   
-  <div class="form-group">
-    <button type="submit" class="btn btn-primary" style="width: 100%">Iniciar Sesión</button>
+  <div class="pt-2">
+    <button type="submit" class="w-full bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-button-text text-button-text rounded-full py-3 transition-colors">Iniciar Sesión</button>
   </div>
 </form>
 {% endblock %}

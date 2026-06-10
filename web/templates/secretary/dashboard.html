@@ -2,27 +2,35 @@
 
 {% block page_title %}Panel de Secretaría{% endblock %}
 
+{% block page_actions %}
+<p class="font-body-md text-body-md text-on-surface-variant">Bienvenida al panel de secretaría. Aquí puedes monitorear la actividad.</p>
+{% endblock %}
+
 {% block content %}
-<div class="card">
-  <div class="card-header">
-    <h3>Resumen de Actividad</h3>
+<div class="grid grid-cols-12 gap-6 mb-stack-lg">
+  <!-- Reuniones Hoy -->
+  <div class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start">
+      <div class="p-3 bg-tertiary-container rounded-xl">
+        <span class="material-symbols-outlined text-on-tertiary-container">event</span>
+      </div>
+    </div>
+    <div class="mt-4">
+      <p class="text-[28px] font-black text-primary">--</p>
+      <p class="font-body-md text-body-md text-on-surface-variant">Reuniones Hoy</p>
+    </div>
   </div>
-  <div class="card-body">
-    <p>Bienvenida al panel de secretaría. Aquí puedes monitorear todas las reuniones de la empresa.</p>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-4); margin-top: var(--spacing-6);">
-      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
-        <div class="card-body">
-          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Reuniones Hoy</h4>
-          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
-        </div>
+  
+  <!-- Salas Ocupadas -->
+  <div class="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+    <div class="flex justify-between items-start">
+      <div class="p-3 bg-secondary-container rounded-xl">
+        <span class="material-symbols-outlined text-on-secondary-container">meeting_room</span>
       </div>
-      <div class="card" style="background-color: var(--color-gray-50); border: 1px solid var(--color-gray-300);">
-        <div class="card-body">
-          <h4 style="margin-bottom: var(--spacing-2); color: var(--color-gray-700);">Salas Ocupadas</h4>
-          <p style="font-size: 2rem; font-weight: 700; margin-bottom: 0; color: var(--color-primary);">--</p>
-        </div>
-      </div>
+    </div>
+    <div class="mt-4">
+      <p class="text-[28px] font-black text-primary">--</p>
+      <p class="font-body-md text-body-md text-on-surface-variant">Salas Ocupadas</p>
     </div>
   </div>
 </div>
