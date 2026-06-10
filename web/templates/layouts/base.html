@@ -1,44 +1,140 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Agenda Ecuamatriz{% endblock %}</title>
   
-  <!-- Estilos Corporativos -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
   
+  <script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                "colors": {
+                    "on-error-container": "#93000a",
+                    "inverse-surface": "#2f3032",
+                    "on-secondary-fixed-variant": "#00513b",
+                    "primary-container": "#0f2a44",
+                    "surface-container-high": "#e9e8ea",
+                    "outline-variant": "#c3c6ce",
+                    "on-primary-fixed-variant": "#304864",
+                    "on-secondary-container": "#1f7156",
+                    "tertiary-fixed": "#ffddb8",
+                    "primary-fixed": "#d1e4ff",
+                    "on-secondary-fixed": "#002116",
+                    "on-primary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e3e2e4",
+                    "tertiary-fixed-dim": "#ebbf8c",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#efedf0",
+                    "on-tertiary-fixed": "#2a1700",
+                    "on-error": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f4f3f6",
+                    "secondary": "#166b50",
+                    "on-background": "#1a1c1e",
+                    "tertiary-container": "#3c2300",
+                    "surface-tint": "#48607d",
+                    "secondary-fixed-dim": "#88d6b5",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#b0c9ea",
+                    "on-primary-container": "#7992b1",
+                    "on-primary-fixed": "#001d36",
+                    "on-tertiary-container": "#af895a",
+                    "surface-bright": "#faf9fb",
+                    "on-surface-variant": "#43474d",
+                    "inverse-primary": "#b0c9ea",
+                    "outline": "#74777e",
+                    "surface-dim": "#dbd9dc",
+                    "surface-container-highest": "#e3e2e4",
+                    "secondary-container": "#a4f3d0",
+                    "primary": "#00152a",
+                    "surface": "#faf9fb",
+                    "on-surface": "#1a1c1e",
+                    "inverse-on-surface": "#f2f0f3",
+                    "tertiary": "#201100",
+                    "secondary-fixed": "#a4f3d0",
+                    "on-tertiary-fixed-variant": "#5f4119",
+                    "error": "#ba1a1a",
+                    "background": "#faf9fb"
+                },
+                "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+                },
+                "spacing": {
+                    "stack-sm": "8px",
+                    "stack-lg": "24px",
+                    "sidebar-width": "260px",
+                    "gutter": "16px",
+                    "topbar-height": "64px",
+                    "stack-md": "16px",
+                    "container-padding": "24px"
+                },
+                "fontFamily": {
+                    "table-header": ["Inter"],
+                    "button-text": ["Inter"],
+                    "table-cell": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "page-title": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "card-title": ["Inter"]
+                },
+                "fontSize": {
+                    "table-header": ["13px", {"lineHeight": "18px", "fontWeight": "600"}],
+                    "button-text": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "table-cell": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "card-title": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                }
+            },
+        },
+    }
+  </script>
+  
+  <style>
+      body { font-family: 'Inter', sans-serif; background-color: #F5F7FA; }
+      .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+      .sidebar-active-bar { position: absolute; left: 0; width: 4px; height: 100%; background-color: #00152a; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+  </style>
+
   {% block extra_css %}{% endblock %}
 </head>
-<body>
-  <div class="layout-wrapper">
-    <!-- Sidebar Partial -->
-    {% include 'layouts/partials/sidebar.html' %}
+<body class="bg-background text-on-background">
+  <!-- Sidebar Partial -->
+  {% include 'layouts/partials/sidebar.html' %}
+  
+  <!-- Top Navigation Bar Partial -->
+  {% include 'layouts/partials/topbar.html' %}
+  
+  <!-- Main Content Canvas -->
+  <main class="ml-[260px] pt-[64px] min-h-screen p-container-padding">
+    <!-- Flashes Partial -->
+    {% include 'layouts/partials/flashes.html' %}
     
-    <!-- Main Content Area -->
-    <div class="main-content">
-      <!-- Topbar Partial -->
-      {% include 'layouts/partials/topbar.html' %}
-      
-      <!-- Page Content -->
-      <main class="page-content">
-        <!-- Flashes Partial -->
-        {% include 'layouts/partials/flashes.html' %}
-        
-        <div class="page-header">
-          <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
-          <div class="page-actions">
-            {% block page_actions %}{% endblock %}
-          </div>
-        </div>
-        
-        {% block content %}{% endblock %}
-      </main>
+    <div class="mb-stack-lg">
+      <h2 class="font-page-title text-page-title text-primary">{% block page_title %}{% endblock %}</h2>
+      <div class="page-actions mt-2">
+        {% block page_actions %}{% endblock %}
+      </div>
     </div>
-  </div>
+    
+    {% block content %}{% endblock %}
+  </main>
   
   {% block extra_js %}{% endblock %}
 </body>

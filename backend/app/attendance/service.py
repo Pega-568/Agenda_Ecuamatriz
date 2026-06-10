@@ -79,6 +79,7 @@ class AttendanceService:
 
         token = AttendanceToken.query.filter_by(token_hash=AttendanceService._hash_token(plain_token), is_active=True).first()
         if not token:
+            NotificationService.notify_qr_error(actor_user.id, NotificationEvent.QR_INVALID, "Token QR inválido.")
             raise ValueError("Token QR inválido.")
         meeting = token.meeting
         if meeting.status == MeetingStatus.CANCELLED:
@@ -87,10 +88,13 @@ class AttendanceService:
 
         participant = MeetingParticipant.query.filter_by(meeting_id=meeting.id, user_id=actor_user.id).first()
         if not participant:
+            NotificationService.notify_qr_error(actor_user.id, NotificationEvent.QR_NOT_ALLOWED, "El usuario no es participante de esta reunión.")
             raise PermissionError("El usuario no es participante de esta reunión.")
         if participant.invitation_status != InvitationStatus.ACCEPTED:
+            NotificationService.notify_qr_error(actor_user.id, NotificationEvent.QR_NOT_ALLOWED, "Solo participantes con invitación aceptada pueden marcar asistencia por QR.")
             raise ValueError("Solo participantes con invitación aceptada pueden marcar asistencia por QR.")
         if participant.attendance_status != AttendanceStatus.NOT_MARKED:
+            NotificationService.notify_qr_error(actor_user.id, NotificationEvent.ATTENDANCE_ALREADY_MARKED, "Tu asistencia ya fue registrada.")
             raise ValueError("Asistencia ya registrada.")
 
         participant.attendance_status = AttendanceStatus.PRESENT
@@ -99,13 +103,10 @@ class AttendanceService:
         participant.attendance_marked_by_user_id = actor_user.id
         participant.attendance_comment = None
         AuditService.log(AuditEvent.ATTENDANCE_MARKED_QR, actor_user.id, "Meeting", meeting.id, {"participant_id": participant.id})
-        NotificationService.create(
-            meeting.created_by_user_id,
-            NotificationEvent.ATTENDANCE_MARKED,
-            "Asistencia registrada",
-            f"{actor_user.full_name} registró asistencia en {meeting.title}",
-            "Meeting",
-            meeting.id,
+        NotificationService.notify_attendance_marked(
+            user_id=actor_user.id,
+            title=meeting.title,
+            meeting_id=meeting.id
         )
         db.session.commit()
         return participant

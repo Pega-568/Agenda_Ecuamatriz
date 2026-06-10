@@ -65,13 +65,10 @@ class MeetingService:
 
         for participant_id in participant_ids:
             db.session.add(MeetingParticipant(meeting_id=meeting.id, user_id=participant_id, invitation_status=InvitationStatus.PENDING))
-            NotificationService.create(
-                participant_id,
-                NotificationEvent.MEETING_INVITATION,
-                "Invitación a reunión",
-                f"Has sido invitado a: {meeting.title}",
-                "Meeting",
-                meeting.id,
+            NotificationService.notify_meeting_invited(
+                user_id=participant_id,
+                title=meeting.title,
+                meeting_id=meeting.id
             )
 
         AuditService.log(AuditEvent.MEETING_CREATED, creator.id, "Meeting", meeting.id, {"participant_ids": participant_ids})
@@ -131,13 +128,11 @@ class MeetingService:
         participant.invitation_status = InvitationStatus.ACCEPTED
         participant.responded_at = datetime.now(timezone.utc)
         participant.response_comment = None
-        NotificationService.create(
-            meeting.created_by_user_id,
-            NotificationEvent.MEETING_ACCEPTED,
-            "Invitación aceptada",
-            f"{user.full_name} aceptó la reunión {meeting.title}",
-            "Meeting",
-            meeting.id,
+        NotificationService.notify_meeting_accepted(
+            creator_id=meeting.created_by_user_id,
+            participant_name=user.full_name,
+            title=meeting.title,
+            meeting_id=meeting.id
         )
         AuditService.log(AuditEvent.MEETING_ACCEPTED, user.id, "Meeting", meeting.id)
         db.session.commit()
@@ -152,13 +147,11 @@ class MeetingService:
         participant.invitation_status = InvitationStatus.REJECTED
         participant.responded_at = datetime.now(timezone.utc)
         participant.response_comment = comment
-        NotificationService.create(
-            meeting.created_by_user_id,
-            NotificationEvent.MEETING_REJECTED,
-            "Invitación rechazada",
-            f"{user.full_name} rechazó la reunión {meeting.title}",
-            "Meeting",
-            meeting.id,
+        NotificationService.notify_meeting_rejected(
+            creator_id=meeting.created_by_user_id,
+            participant_name=user.full_name,
+            title=meeting.title,
+            meeting_id=meeting.id
         )
         AuditService.log(AuditEvent.MEETING_REJECTED, user.id, "Meeting", meeting.id, {"comment": comment})
         db.session.commit()

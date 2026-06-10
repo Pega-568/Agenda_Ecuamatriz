@@ -55,4 +55,16 @@ interface AgendaApiService {
 
     @POST("/api/mobile/attendance/qr/{token}")
     suspend fun markAttendanceQR(@Path("token") token: String): Response<ApiResponse<GenericResponse>>
+
+    @POST("/api/mobile/meetings/check-availability")
+    suspend fun checkAvailability(@Body request: AvailabilityCheckRequest): Response<ApiResponse<AvailabilityResponse>>
+
+    @GET("/api/mobile/attendance/meeting/{id}/qr-token")
+    suspend fun getMeetingQrToken(@Path("id") id: Int): Response<ApiResponse<QrTokenResponse>>
+
+    @GET("/api/mobile/notifications")
+    suspend fun getNotifications(): Response<ApiResponse<List<NotificationResponse>>>
+
+    @POST("/api/mobile/notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: Int): Response<ApiResponse<NotificationResponse>>
 }

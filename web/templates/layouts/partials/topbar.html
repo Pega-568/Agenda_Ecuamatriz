@@ -1,14 +1,53 @@
-<header class="topbar">
-  <div class="topbar-left">
-    <!-- Podría haber un breadcrumb o toggle del sidebar -->
+<!-- Top Navigation Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-260px)] h-[64px] bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-gutter z-40">
+  <div class="flex items-center gap-4 flex-1">
+    <div class="relative w-full max-w-md">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+      <input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Buscar reuniones, actas..." type="text"/>
+    </div>
   </div>
-  <div class="topbar-right">
-    <div class="user-profile">
-      <div class="user-avatar">
+  
+  <div class="flex items-center gap-2">
+    <div class="relative group">
+      <button class="hover:bg-surface-container rounded-full p-2 transition-transform active:scale-95 text-on-surface-variant relative">
+        <span class="material-symbols-outlined">notifications</span>
+        {% if unread_notifications|length > 0 %}
+        <span class="absolute top-1 right-1 bg-error text-on-error text-[10px] px-1.5 py-0.5 rounded-full font-bold">{{ unread_notifications|length }}</span>
+        {% endif %}
+      </button>
+      
+      {% if unread_notifications|length > 0 %}
+      <!-- Dropdown Notificaciones -->
+      <div class="hidden group-hover:block absolute right-0 top-full mt-2 w-[300px] bg-surface border border-outline-variant rounded-xl shadow-md z-50">
+        <div class="p-4 border-b border-outline-variant">
+          <h4 class="font-bold text-primary">Notificaciones</h4>
+        </div>
+        <ul class="max-h-[300px] overflow-y-auto">
+          {% for note in unread_notifications %}
+          <li class="p-4 border-b border-surface-variant hover:bg-surface-bright transition-colors cursor-pointer">
+            <p class="font-bold text-sm text-on-surface">{{ note.title }}</p>
+            <p class="text-xs text-on-surface-variant mt-1">{{ note.message }}</p>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    
+    <button class="hover:bg-surface-container rounded-full p-2 transition-transform active:scale-95 text-on-surface-variant">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+    
+    <div class="h-8 w-px bg-outline-variant mx-2"></div>
+    
+    <div class="flex items-center gap-3 pl-2">
+      <div class="text-right hidden sm:block">
+        <p class="font-label-sm text-label-sm text-primary">{{ current_user.full_name }}</p>
+        <p class="text-[10px] text-on-surface-variant uppercase font-bold">{{ current_user.role_slug }}</p>
+      </div>
+      <div class="w-10 h-10 rounded-full border border-outline-variant bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
         {{ current_user.first_name[0] }}{{ current_user.last_name[0] }}
       </div>
-      <span>{{ current_user.full_name }}</span>
     </div>
-    <a href="{{ url_for('auth_web.logout') }}" class="btn btn-secondary btn-sm">Cerrar Sesión</a>
   </div>
 </header>

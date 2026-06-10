@@ -1,62 +1,154 @@
 {% extends "layouts/base.html" %}
 
-{% block page_title %}Mi Panel{% endblock %}
+{% block page_title %}Buenos días, {{ current_user.first_name }}{% endblock %}
+
+{% block page_actions %}
+<p class="font-body-md text-body-md text-on-surface-variant">Aquí tienes un resumen de tu actividad para hoy.</p>
+{% endblock %}
 
 {% block content %}
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-6);">
+<!-- Dashboard Bento Grid -->
+<div class="grid grid-cols-12 gap-6 mb-stack-lg">
+  <!-- Featured: Next Meeting (Large Card) -->
+  <div class="col-span-12 lg:col-span-8 bg-primary-container text-on-primary-container rounded-xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[240px] shadow-sm">
+    <div class="relative z-10">
+      <span class="bg-secondary text-on-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block">Próxima Reunión</span>
+      {% if today_meetings and today_meetings|length > 0 %}
+      <h3 class="text-[32px] font-black leading-tight mb-2">{{ today_meetings[0].title }}</h3>
+      <div class="flex flex-wrap gap-6 mt-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-fixed-dim">schedule</span>
+          <span class="font-body-lg text-body-lg">{{ today_meetings[0].start_time.strftime('%I:%M %p') }} - {{ today_meetings[0].end_time.strftime('%I:%M %p') }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-fixed-dim">location_on</span>
+          <span class="font-body-lg text-body-lg">{{ today_meetings[0].room.name if today_meetings[0].room else today_meetings[0].modality }}</span>
+        </div>
+      </div>
+      {% else %}
+      <h3 class="text-[32px] font-black leading-tight mb-2">No hay reuniones próximas hoy</h3>
+      {% endif %}
+    </div>
+    <div class="flex items-center justify-between mt-8 relative z-10">
+      <div class="flex -space-x-3">
+        <!-- Icons or avatars could go here -->
+      </div>
+      {% if today_meetings and today_meetings|length > 0 %}
+      <a href="{{ url_for('web_user.meeting_detail', meeting_id=today_meetings[0].id) }}" class="bg-on-primary-container text-primary-container px-6 py-2.5 rounded-xl font-bold hover:bg-white transition-colors">Ver Detalles</a>
+      {% endif %}
+    </div>
+    <!-- Abstract Decorative Pattern -->
+    <div class="absolute right-[-40px] top-[-40px] w-64 h-64 bg-secondary opacity-10 rounded-full blur-3xl"></div>
+    <div class="absolute left-[-20px] bottom-[-20px] w-48 h-48 bg-primary opacity-20 rounded-full blur-2xl"></div>
+  </div>
   
-  <div class="card">
-    <div class="card-header">
-      <h3>Reuniones de Hoy</h3>
+  <!-- Stats Column -->
+  <div class="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-6">
+    <!-- Invitaciones -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start">
+        <div class="p-3 bg-secondary-container rounded-xl">
+          <span class="material-symbols-outlined text-on-secondary-container">mail</span>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p class="text-[28px] font-black text-primary">{{ pending_invitations|length }}</p>
+        <p class="font-body-md text-body-md text-on-surface-variant">Invitaciones pendientes</p>
+      </div>
     </div>
-    <div class="card-body">
-      {% if today_meetings %}
-        <ul style="display: flex; flex-direction: column; gap: var(--spacing-3);">
-        {% for meeting in today_meetings %}
-          <li style="padding: var(--spacing-3); background-color: var(--color-gray-50); border-radius: var(--border-radius-md); border: 1px solid var(--color-gray-300);">
-            <div style="font-weight: 600;">{{ meeting.title }}</div>
-            <div style="font-size: 0.875rem; color: var(--color-gray-700);">{{ meeting.start_time.strftime('%H:%M') }} - Sala: {{ meeting.room.name if meeting.room else 'Virtual' }}</div>
-          </li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        <p style="color: var(--color-gray-700);">No tienes reuniones programadas para hoy.</p>
-      {% endif %}
+    
+    <!-- Reuniones Hoy -->
+    <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start">
+        <div class="p-3 bg-tertiary-fixed rounded-xl">
+          <span class="material-symbols-outlined text-on-tertiary-fixed-variant">event</span>
+        </div>
+      </div>
+      <div class="mt-4">
+        <p class="text-[28px] font-black text-primary">{{ today_meetings|length }}</p>
+        <p class="font-body-md text-body-md text-on-surface-variant">Reuniones programadas para hoy</p>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="card-header">
-      <h3>Invitaciones Pendientes</h3>
-    </div>
-    <div class="card-body">
-      {% if pending_invitations %}
-        <ul style="display: flex; flex-direction: column; gap: var(--spacing-3);">
-        {% for inv in pending_invitations %}
-          <li style="padding: var(--spacing-3); background-color: var(--color-warning-light); border-radius: var(--border-radius-md); border: 1px solid #FDE68A;">
-            <div style="font-weight: 600;">{{ inv.meeting.title }}</div>
-            <div style="font-size: 0.875rem;">{{ inv.meeting.date.strftime('%Y-%m-%d') }} {{ inv.meeting.start_time.strftime('%H:%M') }}</div>
-            <div style="margin-top: var(--spacing-2); display: flex; gap: var(--spacing-2); flex-direction: column;">
-              <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="action" value="accept">
-                <button class="btn btn-sm btn-primary">Aceptar</button>
-              </form>
-              <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="action" value="reject">
-                <input type="text" name="comment" placeholder="Motivo de rechazo..." class="form-control" style="padding: 0.2rem;" required>
-                <button type="submit" class="btn btn-sm btn-danger">Rechazar</button>
-              </form>
+<!-- Bottom Section: Reuniones de Hoy & Invitaciones Pendientes -->
+<div class="grid grid-cols-12 gap-6">
+  <!-- Today's Schedule -->
+  <div class="col-span-12 xl:col-span-6 space-y-6">
+    <div class="bg-white border border-outline-variant rounded-xl p-6 shadow-sm">
+      <div class="flex items-center justify-between mb-6">
+        <h4 class="font-card-title text-card-title text-primary">Reuniones de hoy</h4>
+        <span class="bg-surface-container px-2 py-1 rounded text-[10px] font-bold text-on-surface-variant">{{ today_meetings|length }} TOTAL</span>
+      </div>
+      
+      <div class="space-y-4">
+        {% if today_meetings %}
+          {% for meeting in today_meetings %}
+          <div class="flex gap-4 group">
+            <div class="flex flex-col items-center">
+              <div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-fixed"></div>
+              {% if not loop.last %}
+              <div class="w-0.5 h-full bg-outline-variant my-1"></div>
+              {% endif %}
             </div>
-          </li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        <p style="color: var(--color-gray-700);">No tienes invitaciones pendientes.</p>
-      {% endif %}
+            <div class="pb-6 w-full">
+              <p class="text-label-sm font-bold text-primary">{{ meeting.start_time.strftime('%I:%M %p') }}</p>
+              <p class="font-button-text text-button-text text-primary font-bold">{{ meeting.title }}</p>
+              <div class="flex justify-between items-center mt-2">
+                <p class="text-label-sm text-on-surface-variant">{{ meeting.room.name if meeting.room else meeting.modality }}</p>
+                <a href="{{ url_for('web_user.meeting_detail', meeting_id=meeting.id) }}" class="text-primary hover:underline text-sm font-medium">Ver</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-on-surface-variant">No tienes reuniones programadas para hoy.</p>
+        {% endif %}
+      </div>
     </div>
   </div>
-
+  
+  <!-- Invitaciones Pendientes -->
+  <div class="col-span-12 xl:col-span-6">
+    <div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+      <div class="p-6 border-b border-outline-variant flex items-center justify-between">
+        <h4 class="font-card-title text-card-title text-primary">Invitaciones Pendientes</h4>
+      </div>
+      
+      <div class="p-6">
+        {% if pending_invitations %}
+          <ul class="flex flex-col gap-4">
+          {% for inv in pending_invitations %}
+            <li class="p-4 bg-error-container rounded-xl border border-error-container shadow-sm">
+              <div class="font-bold text-on-error-container text-lg">{{ inv.meeting.title }}</div>
+              <div class="text-sm text-on-surface-variant mt-1 mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                {{ inv.meeting.date.strftime('%d/%m/%Y') }} a las {{ inv.meeting.start_time.strftime('%I:%M %p') }}
+              </div>
+              
+              <div class="flex gap-2 items-center">
+                <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" class="inline-block">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="action" value="accept">
+                  <button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">Aceptar</button>
+                </form>
+                
+                <form action="{{ url_for('web_user.action_meeting', meeting_id=inv.meeting.id) }}" method="POST" class="flex gap-2 items-center flex-1">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="action" value="reject">
+                  <input type="text" name="comment" placeholder="Motivo de rechazo..." class="flex-1 px-3 py-2 border border-outline-variant rounded-lg text-sm" required>
+                  <button type="submit" class="bg-error text-on-error px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">Rechazar</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-on-surface-variant">No tienes invitaciones pendientes.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

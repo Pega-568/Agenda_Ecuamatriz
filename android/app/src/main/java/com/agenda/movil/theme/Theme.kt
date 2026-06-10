@@ -11,16 +11,20 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = EcuamatrizBlue,
-    secondary = EcuamatrizLightBlue,
-    tertiary = EcuamatrizDarkBlue,
+    primary = EcuamatrizPrimary,
+    secondary = EcuamatrizSecondary,
+    tertiary = EcuamatrizSecondary,
     background = EcuamatrizBackground,
     surface = EcuamatrizSurface,
     onPrimary = EcuamatrizSurface,
-    onSecondary = EcuamatrizText,
+    onSecondary = EcuamatrizSurface,
     onTertiary = EcuamatrizSurface,
-    onBackground = EcuamatrizText,
-    onSurface = EcuamatrizText
+    onBackground = EcuamatrizTextPrimary,
+    onSurface = EcuamatrizTextPrimary,
+    error = EcuamatrizError,
+    outline = EcuamatrizBorder,
+    surfaceVariant = EcuamatrizBackground,
+    onSurfaceVariant = EcuamatrizTextSecondary
 )
 
 @Composable

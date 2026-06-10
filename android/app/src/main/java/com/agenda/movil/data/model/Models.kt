@@ -106,3 +106,42 @@ data class UserOption(
     val email: String,
     val area: String?
 )
+
+data class AvailabilityCheckRequest(
+    val date: String,
+    @SerializedName("start_time") val startTime: String,
+    @SerializedName("end_time") val endTime: String,
+    @SerializedName("room_id") val roomId: Int?,
+    @SerializedName("participant_ids") val participantIds: List<Int>
+)
+
+data class AvailabilityResponse(
+    @SerializedName("can_create") val canCreate: Boolean,
+    @SerializedName("hard_blocks") val hardBlocks: List<AvailabilityBlock>,
+    val participants: List<AvailabilityParticipant>
+)
+
+data class AvailabilityBlock(
+    val code: String,
+    val message: String
+)
+
+data class AvailabilityParticipant(
+    val id: Int,
+    val status: String,
+    val message: String
+)
+
+data class QrTokenResponse(
+    @SerializedName("qr_payload") val qrPayload: String,
+    @SerializedName("valid_until") val validUntil: String
+)
+
+data class NotificationResponse(
+    val id: String,
+    val type: String,
+    val title: String,
+    val message: String,
+    @SerializedName("is_read") val isRead: Boolean,
+    @SerializedName("created_at") val createdAt: String?
+)

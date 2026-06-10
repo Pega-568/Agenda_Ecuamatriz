@@ -146,3 +146,19 @@ def action_meeting(meeting_id):
         flash(str(e), "danger")
         
     return redirect(url_for("web_user.dashboard"))
+
+@web_user_bp.route("/meetings/check-availability", methods=["POST"])
+def check_availability():
+    from app.availability.service import AvailabilityService
+    from app.availability.schemas import AvailabilityCheckSchema
+    from marshmallow import ValidationError
+    from flask import jsonify
+    
+    try:
+        payload = AvailabilityCheckSchema().load(request.get_json(silent=True) or {})
+        result = AvailabilityService.check(payload, creator_id=current_user.id)
+        return jsonify({"success": True, "data": result}), 200
+    except ValidationError as exc:
+        return jsonify({"success": False, "error": {"message": "Datos inválidos", "details": exc.messages}}), 422
+    except Exception as exc:
+        return jsonify({"success": False, "error": {"message": str(exc)}}), 400

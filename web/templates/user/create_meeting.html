@@ -2,83 +2,145 @@
 
 {% block page_title %}Nueva Reunión{% endblock %}
 
+{% block page_actions %}
+<p class="text-on-surface-variant font-body-md">Siga los pasos para programar un nuevo encuentro.</p>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width: 800px;">
-  <div class="card-body">
-    <form method="POST" action="{{ url_for('web_user.create_meeting') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+<form method="POST" action="{{ url_for('web_user.create_meeting') }}" class="flex flex-col flex-1" id="createMeetingForm">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+  <div class="grid grid-cols-12 gap-stack-lg flex-1">
+    <!-- Columna Izquierda: Información Básica y Logística -->
+    <div class="col-span-12 lg:col-span-7 space-y-stack-md">
+      <!-- Información Básica -->
+      <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
+        <h3 class="font-card-title text-card-title text-primary mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined">info</span>
+          Información Básica
+        </h3>
+        <div class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label for="title" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Título de la Reunión *</label>
+              <input type="text" id="title" name="title" class="w-full border border-outline-variant rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" required>
+            </div>
+            <div class="space-y-2">
+              <label for="objective" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Objetivo *</label>
+              <input type="text" id="objective" name="objective" class="w-full border border-outline-variant rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" required>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label for="agenda_items" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Orden del Día (separe por comas) *</label>
+            <textarea id="agenda_items" name="agenda_items" class="w-full border border-outline-variant rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" rows="3" required></textarea>
+          </div>
+          <div class="space-y-2">
+            <label for="description" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Descripción (Opcional)</label>
+            <textarea id="description" name="description" class="w-full border border-outline-variant rounded-xl p-3 focus:ring-2 focus:ring-primary focus:border-primary transition-all" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
       
-      <div class="form-group">
-        <label for="title" class="form-label">Título de la Reunión</label>
-        <input type="text" id="title" name="title" class="form-control" required>
+      <!-- Logística & Tiempo -->
+      <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm">
+        <h3 class="font-card-title text-card-title text-primary mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined">schedule</span>
+          Logística & Tiempo
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2 md:col-span-2">
+            <label for="date" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Fecha *</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">calendar_today</span>
+              <input type="date" id="date" name="date" class="w-full border border-outline-variant rounded-xl p-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary" required>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label for="start_time" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Hora Inicio *</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">alarm</span>
+              <input type="time" id="start_time" name="start_time" class="w-full border border-outline-variant rounded-xl p-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary" required>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <label for="end_time" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Hora Fin *</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">alarm</span>
+              <input type="time" id="end_time" name="end_time" class="w-full border border-outline-variant rounded-xl p-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary" required>
+            </div>
+          </div>
+          <div class="space-y-2 md:col-span-2">
+            <label for="room_id" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Sala de Reuniones *</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">meeting_room</span>
+              <select id="room_id" name="room_id" class="w-full border border-outline-variant rounded-xl p-3 pl-10 focus:ring-2 focus:ring-primary focus:border-primary" required>
+                <option value="">-- Seleccionar Sala --</option>
+                {% for room in rooms %}
+                <option value="{{ room.id }}">{{ room.name }} (Cap: {{ room.capacity }})</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="form-group">
-        <label for="objective" class="form-label">Objetivo de la Reunión</label>
-        <input type="text" id="objective" name="objective" class="form-control" required>
-      </div>
-
-      <div class="form-group">
-        <label for="agenda_items" class="form-label">Orden del Día (separe los puntos por comas)</label>
-        <textarea id="agenda_items" name="agenda_items" class="form-control" rows="2" required></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="description" class="form-label">Descripción (Opcional)</label>
-        <textarea id="description" name="description" class="form-control" rows="2"></textarea>
-      </div>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-4);">
-        <div class="form-group">
-          <label for="date" class="form-label">Fecha de Inicio</label>
-          <input type="date" id="date" name="date" class="form-control" required>
+    </div>
+    
+    <!-- Columna Derecha: Participantes y Conflictos -->
+    <div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+      <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl flex-1 flex flex-col min-h-[400px]">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-card-title text-card-title text-primary">Gestionar Participantes</h3>
         </div>
         
-        <div class="form-group">
-          <label for="start_time" class="form-label">Hora de Inicio</label>
-          <input type="time" id="start_time" name="start_time" class="form-control" required>
-        </div>
-
-        <div class="form-group">
-          <label for="end_time" class="form-label">Hora de Fin</label>
-          <input type="time" id="end_time" name="end_time" class="form-control" required>
-        </div>
-      </div>
-      
-      <div class="form-group">
-        <label for="room_id" class="form-label">Sala de Reuniones</label>
-        <select id="room_id" name="room_id" class="form-control" required>
-          <option value="">-- Seleccionar Sala --</option>
-          {% for room in rooms %}
-          <option value="{{ room.id }}">{{ room.name }} (Capacidad: {{ room.capacity }})</option>
-          {% endfor %}
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Participantes Invitados</label>
-        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--color-gray-300); padding: 10px; border-radius: 4px;">
+        <div class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar border border-outline-variant rounded-xl p-3">
           {% for user in users %}
-          <div style="margin-bottom: 5px;">
-            <label style="font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" name="participant_ids" value="{{ user.id }}">
-              {{ user.full_name }} ({{ user.email }})
-            </label>
-          </div>
+          <label class="flex items-center justify-between p-3 border border-outline-variant rounded-xl hover:bg-surface-container transition-colors cursor-pointer participant-label">
+            <div class="flex items-center gap-4">
+              <input type="checkbox" name="participant_ids" value="{{ user.id }}" class="w-5 h-5 text-primary border-outline-variant rounded focus:ring-primary">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                  {{ user.first_name[0] }}{{ user.last_name[0] }}
+                </div>
+                <div>
+                  <p class="font-bold text-on-surface">{{ user.full_name }}</p>
+                  <p class="text-xs text-on-surface-variant">{{ user.email }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="badge-container text-right">
+              <!-- JS will inject badges here -->
+            </div>
+          </label>
           {% endfor %}
           {% if not users %}
-          <p style="color: var(--color-gray-500); font-size: 0.9em; margin: 0;">No hay usuarios disponibles para invitar.</p>
+          <p class="text-on-surface-variant text-center py-8">No hay usuarios disponibles para invitar.</p>
           {% endif %}
         </div>
       </div>
       
-      <div class="form-group" style="margin-top: var(--spacing-6); padding-top: var(--spacing-4); border-top: 1px solid var(--color-gray-300);">
-        <button type="submit" class="btn btn-primary" onclick="return validateParticipants()">Agendar Reunión</button>
-        <a href="{{ url_for('web_user.dashboard') }}" class="btn btn-secondary" style="margin-left: var(--spacing-2);">Cancelar</a>
+      <div id="conflict-alert" class="bg-error-container/30 border border-error/20 p-6 rounded-xl" style="display: none;">
+        <div class="flex gap-3 mb-4">
+          <span class="material-symbols-outlined text-error">warning</span>
+          <h4 class="font-bold text-on-error-container">Conflicto Detectado</h4>
+        </div>
+        <div id="conflict-list" class="text-sm text-on-error-container space-y-2">
+        </div>
       </div>
-    </form>
+      
+      <div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm mt-auto">
+        <div class="flex gap-4">
+          <a href="{{ url_for('web_user.dashboard') }}" class="flex-1 text-center border border-outline-variant text-on-surface font-button-text text-button-text px-6 py-3 rounded-xl hover:bg-surface-container transition-all">
+            Cancelar
+          </a>
+          <button type="submit" id="submit-btn" class="flex-1 bg-primary text-white font-button-text text-button-text px-6 py-3 rounded-xl hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2" onclick="return validateParticipants()">
+            Crear Reunión
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</form>
 
 <script>
 function validateParticipants() {
@@ -87,7 +149,115 @@ function validateParticipants() {
         alert("Debe seleccionar al menos un participante.");
         return false;
     }
+    
+    if (document.getElementById("submit-btn").disabled) {
+        alert("Corrija los conflictos de disponibilidad antes de continuar.");
+        return false;
+    }
     return true;
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const inputs = document.querySelectorAll('#date, #start_time, #end_time, #room_id, input[name="participant_ids"]');
+    let debounceTimer;
+
+    function checkAvailability() {
+        const date = document.getElementById('date').value;
+        const startTime = document.getElementById('start_time').value;
+        const endTime = document.getElementById('end_time').value;
+        const roomId = document.getElementById('room_id').value;
+        
+        const participantCheckboxes = document.querySelectorAll('input[name="participant_ids"]:checked');
+        const participantIds = Array.from(participantCheckboxes).map(cb => parseInt(cb.value));
+
+        if (!date || !startTime || !endTime) {
+            resetBadges();
+            return;
+        }
+
+        const payload = {
+            date: date,
+            start_time: startTime,
+            end_time: endTime,
+            room_id: roomId ? parseInt(roomId) : null,
+            participant_ids: participantIds
+        };
+
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
+        fetch('{{ url_for("web_user.check_availability") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateBadges(data.data);
+            }
+        })
+        .catch(error => console.error("Error checking availability:", error));
+    }
+
+    function updateBadges(data) {
+        resetBadges();
+
+        const submitBtn = document.getElementById("submit-btn");
+        const conflictAlert = document.getElementById("conflict-alert");
+        const conflictList = document.getElementById("conflict-list");
+        
+        if (data.can_create) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            conflictAlert.style.display = 'none';
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            conflictAlert.style.display = 'block';
+            let html = "<ul class='list-disc pl-5'>";
+            data.hard_blocks.forEach(block => {
+                html += `<li>${block.message}</li>`;
+            });
+            html += "</ul>";
+            conflictList.innerHTML = html;
+        }
+
+        // Update participants
+        data.participants.forEach(p => {
+            const cb = document.querySelector(`input[name="participant_ids"][value="${p.id}"]`);
+            if(cb) {
+                const label = cb.closest('.participant-label');
+                const badgeContainer = label.querySelector('.badge-container');
+                let badgeHtml = "";
+                if (p.status === "available") {
+                    badgeHtml = `<span class="bg-secondary text-white text-[10px] font-bold uppercase px-2 py-1 rounded">Disponible</span>`;
+                } else if (p.status === "busy") {
+                    badgeHtml = `<span class="bg-error text-white text-[10px] font-bold uppercase px-2 py-1 rounded">Ocupado</span>`;
+                } else {
+                    badgeHtml = `<span class="bg-yellow-500 text-white text-[10px] font-bold uppercase px-2 py-1 rounded">${p.status}</span>`;
+                }
+                badgeContainer.innerHTML = badgeHtml;
+            }
+        });
+    }
+
+    function resetBadges() {
+        document.querySelectorAll('.badge-container').forEach(b => b.innerHTML = '');
+        const submitBtn = document.getElementById("submit-btn");
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        document.getElementById("conflict-alert").style.display = 'none';
+    }
+
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(checkAvailability, 500);
+        });
+    });
+});
 </script>
 {% endblock %}

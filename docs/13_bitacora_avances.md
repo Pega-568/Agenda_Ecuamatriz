@@ -507,3 +507,27 @@ grok\ ni Cloudflare Tunnel. La prueba ha sido enjaulada en la infraestructura de
 
 **Estado Actual**: Listo y desplegable. Tests 100% pasando y Android APK recompilado con éxito.
 
+### [2026-06-10] — Ajustes de Diseño (Stitch) y Notificaciones Dinámicas (Fase 9.3)
+
+**Qué se hizo**:
+- Implementado sistema de notificaciones dinámicas en el backend (`GET /api/mobile/notifications`) que fusiona eventos estáticos en base de datos (`Notification`) con notificaciones virtuales en tiempo real (por ejemplo, "Reunión empieza en 15 minutos").
+- Alineada la interfaz web a los esquemas de color y organización de Stitch Reference. Se actualizaron `topbar.html` y `base.html` integrando la paleta corporativa y modernizando los componentes visuales (`Ecuamatriz Blue`, hover dinámicos, etc).
+- Ajustada la interfaz nativa en Android actualizando `Theme.kt` y `Color.kt` para reflejar la identidad visual provista por los mockups (fondo unificado, elevación en cards, tintes primarios).
+- Integrado el nuevo tab "Notificaciones" dentro de `HomeScreen.kt` en Android usando componentes Compose listos (`NotificationCard`).
+- Depurado `pytest` arreglando el setup concurrente de la base de datos (con `db.drop_all()`) asegurando que los tests de `_db.create_all()` no fallen intermitentemente.
+- Todos los tests de la suite pasan limpiamente.
+
+**Decisiones Técnicas**:
+- Se prefirieron "Notificaciones Dinámicas" calculadas en tiempo de ejecución para recordatorios de hora (ej: 15 min antes) sin necesidad de configurar *crons* ni *celery workers*, aligerando la arquitectura.
+- La alineación de la web y de la app utiliza componentes modulares de CSS y Material3.
+
+### [2026-06-10] — Auditoría Visual y Cierre de Diseño (Fase 9.4)
+
+**Qué se hizo**:
+- Adaptación estricta de las interfaces web (`dashboard.html`, `meeting_detail.html`, `create_meeting.html`) a la configuración de diseño Tailwind extraída de los artefactos de Stitch.
+- Revisión y ajuste final del diseño en Android, solventando errores de compilación por la migración a Material3 (ej: `OutlinedTextFieldDefaults`).
+- Finalización con éxito de todas las pruebas automatizadas (66 pruebas aprobadas en 22 segundos).
+- Construcción y empaquetado validado para la aplicación nativa en modo `assembleDebug` (Build successful en 1m).
+- Generación de la documentación formal de cierre de diseño en `docs/24_stitch_visual_audit.md`.
+
+**Estado Actual**: Flujo piloto de punta a punta (Login -> Crear -> Aceptar -> QR) validado técnica y visualmente con la estética Stitch. Listo para UAT.

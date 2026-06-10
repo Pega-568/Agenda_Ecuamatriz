@@ -48,7 +48,7 @@ def test_web_user_dashboard(client, regular_user, db_session):
     
     response = client.get('/user/dashboard')
     assert response.status_code == 200
-    assert b'Mi Panel' in response.data
+    assert b'Reuniones de hoy' in response.data
 
 def test_unauthenticated_redirects_to_login(client, db_session):
     """Prueba que sin estar autenticado te redirija (o lance 401 si es API, o auth required)."""

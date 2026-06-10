@@ -241,6 +241,19 @@ def _register_blueprints(app: Flask):
     from app.web.attendance_routes import web_attendance_bp
     app.register_blueprint(web_attendance_bp)
 
+    @app.context_processor
+    def inject_notifications():
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            from app.notifications.service import NotificationService
+            static_notes = NotificationService.list_for_user(current_user.id)
+            static_dicts = [NotificationService.to_dict(n) for n in static_notes if not n.is_read]
+            dynamic_notes = NotificationService.get_dynamic_notifications(current_user)
+            all_notes = static_dicts + dynamic_notes
+            all_notes.sort(key=lambda x: x["created_at"], reverse=True)
+            return dict(unread_notifications=all_notes)
+        return dict(unread_notifications=[])
+
     # ─── Auth — API JWT para móvil ────────────────────────────────────────
     from app.auth.api_routes import auth_api_bp
     csrf.exempt(auth_api_bp)
@@ -289,6 +302,10 @@ def _register_blueprints(app: Flask):
     from app.api.mobile.attendance_routes import mobile_attendance_bp
     csrf.exempt(mobile_attendance_bp)
     app.register_blueprint(mobile_attendance_bp, url_prefix="/api/mobile/attendance")
+
+    from app.api.mobile.notification_routes import mobile_notifications_bp
+    csrf.exempt(mobile_notifications_bp)
+    app.register_blueprint(mobile_notifications_bp, url_prefix="/api/mobile/notifications")
 
     # ─── Availability ─────────────────────────────────────────────────────
     from app.availability.routes import availability_bp

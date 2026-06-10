@@ -33,10 +33,31 @@ class AgendaFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        // Handle incoming push notifications here
         Log.d("FCM", "Message received from: ${message.from}")
-        if (message.notification != null) {
-            Log.d("FCM", "Notification Body: ${message.notification?.body}")
+        
+        val notificationManager = getSystemService(android.content.Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        val channelId = "agenda_ecuamatriz_channel"
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                channelId,
+                "Notificaciones de Agenda",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
         }
+        
+        val title = message.notification?.title ?: "Nueva Notificación"
+        val body = message.notification?.body ?: "Tienes un nuevo mensaje"
+        Log.d("FCM", "Notification Body: $body")
+        
+        val notificationBuilder = androidx.core.app.NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 }
